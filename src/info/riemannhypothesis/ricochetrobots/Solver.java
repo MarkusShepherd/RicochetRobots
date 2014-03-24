@@ -3,9 +3,12 @@
  */
 package info.riemannhypothesis.ricochetrobots;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -13,13 +16,16 @@ import java.util.Set;
  * 
  */
 public class Solver {
-    // private final Set<Robot> robots;
-    private final Map<Robot, Integer> indexes;
     private final Board board;
     private final Point target;
-    private final Robot targetRobot;
+    // private final Set<Robot> robots;
+    private final Map<Robot, Integer> indexes;
+    // private final Robot targetRobot;
+    private final int targetRobotIndex;
+    private final int numberRobots;
+    private final int moves;
 
-    private final Iterable<Point[]> solution;
+    private final List<Point[]> solution;
 
     public Solver(Board board, Set<Robot> robots, Point target,
             Robot targetRobot) {
@@ -27,23 +33,62 @@ public class Solver {
         this.board = board;
         // this.robots = robots;
         this.target = target;
-        this.targetRobot = targetRobot;
+        // this.targetRobot = targetRobot;
 
+        this.numberRobots = robots.size();
+        this.indexes = new HashMap<Robot, Integer>();
+        Point[] initial = new Point[numberRobots];
         int counter = 0;
-        indexes = new HashMap<Robot, Integer>();
         for (Robot robot : robots) {
-            indexes.put(robot, counter++);
+            indexes.put(robot, counter);
+            initial[counter] = robot.getPosition();
+            counter++;
         }
+        this.targetRobotIndex = indexes.get(targetRobot);
 
-        this.solution = brute();
+        this.solution = solveBruteForce(initial);
+        this.moves = this.solution.size();
     }
 
     /**
      * @return
      */
-    private Iterable<Point[]> brute() {
+    private List<Point[]> solveBruteForce(Point[] initial) {
+        Queue<Node> queue = new LinkedList<Node>();
+        queue.add(new Node(initial, 0, null));
+        Node current;
+        while ((current = queue.poll()) != null) {
+            if (current.configuration[targetRobotIndex].equals(target)) {
+                break;
+            }
+            for (int i = 0; i < numberRobots; i++) {
+                Point position = current.configuration[i];
+                for (Point dest : board.reachable(position,
+                        current.configuration)) {
+                    if (!dest.equals(position)) {
+                        Point[] newConfig = Arrays.copyOf(
+                                current.configuration, numberRobots);
+                        newConfig[i] = dest;
+                        queue.add(new Node(newConfig, current.moves + 1,
+                                current));
+                    }
+                }
+            }
+        }
         LinkedList<Point[]> result = new LinkedList<Point[]>();
+        while (current != null) {
+            result.add(current.configuration);
+            current = current.previous;
+        }
         return result;
+    }
+
+    public int moves() {
+        return moves;
+    }
+
+    public List<Point[]> solution() {
+        return solution;
     }
 
     private class Node {

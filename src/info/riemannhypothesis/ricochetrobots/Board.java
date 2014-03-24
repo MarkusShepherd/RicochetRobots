@@ -44,27 +44,33 @@ public class Board {
     }
 
     public Point dest(Point p, int dir) {
+        if (!isConnected(p, dir)) {
+            return p;
+        }
         Point result = new Point(p.x, p.y);
-        while (isConnected(result, dir)) {
+        do {
             result.x += OFFSETS_DIR[dir][0];
             result.y += OFFSETS_DIR[dir][1];
-        }
+        } while (isConnected(result, dir));
         return result;
     }
 
-    public Point dest(Point p, int dir, Iterable<Robot> robots) {
+    public Point dest(Point p, int dir, Point[] blocked) {
+        if (!isConnected(p, dir)) {
+            return p;
+        }
         Point result = new Point(p.x, p.y);
-        while (isConnected(result, dir)) {
+        do {
             result.x += OFFSETS_DIR[dir][0];
             result.y += OFFSETS_DIR[dir][1];
-            for (Robot robot : robots) {
-                if (result.equals(robot.getPosition())) {
+            for (Point block : blocked) {
+                if (result.equals(block)) {
                     result.x -= OFFSETS_DIR[dir][0];
                     result.y -= OFFSETS_DIR[dir][1];
                     return result;
                 }
             }
-        }
+        } while (isConnected(result, dir));
         return result;
     }
 
@@ -76,10 +82,10 @@ public class Board {
         return result;
     }
 
-    public Set<Point> reachable(Point p, Iterable<Robot> robots) {
+    public Set<Point> reachable(Point p, Point[] blocked) {
         Set<Point> result = new HashSet<Point>();
         for (int dir : DIRECTIONS) {
-            result.add(dest(p, dir, robots));
+            result.add(dest(p, dir, blocked));
         }
         return result;
     }
