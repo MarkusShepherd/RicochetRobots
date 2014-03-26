@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 /**
  * @author MarkusSchepke
@@ -27,15 +26,14 @@ public class Solver {
 
     private final List<Point[]> solution;
 
-    public Solver(Board board, Set<Robot> robots, Point target,
-            Robot targetRobot) {
-        assert robots.contains(targetRobot);
+    public Solver(Board board, Robot[] robots, Point target, int targetRobot) {
+        // assert robots.contains(targetRobot);
         this.board = board;
         // this.robots = robots;
         this.target = target;
         // this.targetRobot = targetRobot;
 
-        this.numberRobots = robots.size();
+        this.numberRobots = robots.length;
         this.indexes = new HashMap<Robot, Integer>();
         Point[] initial = new Point[numberRobots];
         int counter = 0;
@@ -44,10 +42,10 @@ public class Solver {
             initial[counter] = robot.getPosition();
             counter++;
         }
-        this.targetRobotIndex = indexes.get(targetRobot);
+        this.targetRobotIndex = targetRobot;
 
         this.solution = solveBruteForce(initial);
-        this.moves = this.solution.size();
+        this.moves = this.solution.size() - 1;
     }
 
     /**
@@ -77,7 +75,8 @@ public class Solver {
         }
         LinkedList<Point[]> result = new LinkedList<Point[]>();
         while (current != null) {
-            result.add(current.configuration);
+            // result.add(current.configuration);
+            result.addFirst(current.configuration);
             current = current.previous;
         }
         return result;

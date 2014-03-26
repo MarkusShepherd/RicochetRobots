@@ -14,10 +14,12 @@ public class Robot {
 
     private Point position;
     private final String label;
+    private final char letter;
     private final Color color;
 
     public Robot(String label, Color color, Point position) {
         this.label = label;
+        this.letter = label.charAt(0);
         this.color = color;
         this.position = position;
     }
@@ -27,6 +29,13 @@ public class Robot {
      */
     public String getLabel() {
         return label;
+    }
+
+    /**
+     * @return the letter
+     */
+    public char getLetter() {
+        return letter;
     }
 
     /**
@@ -51,10 +60,11 @@ public class Robot {
         this.position = position;
     }
 
-    public static HashSet<Robot> robotSet(int dim, String[] labels) {
-        HashSet<Robot> robots = new HashSet<Robot>();
+    public static Robot[] robotSet(int dim, String[] labels) {
+        Robot[] robots = new Robot[labels.length];
         HashSet<Point> positions = new HashSet<Point>();
         HashSet<Color> colors = new HashSet<Color>();
+        int counter = 0;
         for (String label : labels) {
             Color c;
             do {
@@ -67,12 +77,12 @@ public class Robot {
                         (int) (Math.random() * dim));
             } while (positions.contains(p));
             positions.add(p);
-            robots.add(new Robot(label, c, p));
+            robots[counter++] = new Robot(label, c, p);
         }
         return robots;
     }
 
-    public static HashSet<Robot> robotSet(int dim, int number) {
+    public static Robot[] robotSet(int dim, int number) {
         String[] labels = new String[number];
         for (int i = 0; i < number; i++) {
             labels[i] = "Robot #" + (i + 1);
