@@ -117,21 +117,30 @@ public class Solver {
 
         Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
                 new String[] { "Red", "Yellow", "Green", "Blue" });
+        int targetRobot = (int) (Math.random() * robots.length);
         Point target = (Point) board.getTargets().toArray()[(int) (Math
                 .random() * board.getTargets().size())];
+        HashSet<Point> targetSet = new HashSet<Point>();
+        targetSet.add(target);
+        System.out.println("Searching solution for robot "
+                + robots[targetRobot].getLabel() + " on board:");
+        System.out.println(board.toString(robots, targetSet));
+        System.out.println();
 
-        Solver solver = new Solver(board, robots, target, 0);
+        Solver solver = new Solver(board, robots, target, targetRobot);
 
         System.out.println("Found solution in " + solver.moves() + " moves:");
 
+        int counter = 0;
         for (Point[] config : solver.solution()) {
+            if (counter++ == 0) {
+                continue;
+            }
             // update robot positions
             for (int i = 0; i < config.length; i++) {
                 robots[i].setPosition(config[i]);
             }
-            HashSet<Point> thisTarget = new HashSet<Point>();
-            thisTarget.add(target);
-            System.out.println(board.toString(robots, thisTarget));
+            System.out.println(board.toString(robots, targetSet));
             System.out.println();
         }
     }
