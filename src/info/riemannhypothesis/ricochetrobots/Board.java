@@ -17,19 +17,26 @@ import java.util.Set;
  */
 public class Board {
 
-    public final static int RIGHT = 0;
-    public final static int UP = 1;
-    public final static int LEFT = 2;
-    public final static int DOWN = 3;
-    public final static int[] DIRECTIONS = new int[] { RIGHT, UP, LEFT, DOWN };
+    public static final int RIGHT = 0;
+    public static final int UP = 1;
+    public static final int LEFT = 2;
+    public static final int DOWN = 3;
+    public static final int[] DIRECTIONS = new int[] { RIGHT, UP, LEFT, DOWN };
 
-    private final static byte BIT_RIGHT = 0b00000001;
-    private final static byte BIT_UP = 0b00000010;
-    private final static byte BIT_LEFT = 0b00000100;
-    private final static byte BIT_DOWN = 0b00001000;
-    private final static byte[] BITS_DIR = new byte[] { BIT_RIGHT, BIT_UP,
+    public static final char[][] BARS = new char[][] { { ' ', '\\', '|', '/' },
+            { '\\', ' ', '/', '-' }, { '|', '/', ' ', '\\' },
+            { '/', '-', '\\', ' ' } };
+    public static final char CONNECTED_CHAR = ' ';
+    public static final char EMPTY_FIELD_CHAR = '\u2591';
+    public static final char TARGET_CHAR = '\u2593';
+
+    private static final byte BIT_RIGHT = 0b00000001;
+    private static final byte BIT_UP = 0b00000010;
+    private static final byte BIT_LEFT = 0b00000100;
+    private static final byte BIT_DOWN = 0b00001000;
+    private static final byte[] BITS_DIR = new byte[] { BIT_RIGHT, BIT_UP,
             BIT_LEFT, BIT_DOWN };
-    private final static byte[][] OFFSETS_DIR = new byte[][] { { 0, 1 },
+    public static final byte[][] OFFSETS_DIR = new byte[][] { { 0, 1 },
             { -1, 0 }, { 0, -1 }, { 1, 0 } };
 
     private final byte[][] board;
@@ -179,107 +186,89 @@ public class Board {
      */
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-
-        for (int y = 0; y < dimY * 2 + 1; y++) {
-            result.append('-');
-        }
-        result.append('\n');
-        for (int x = 0; x < dimX; x++) {
-            result.append('|');
-            for (int y = 0; y < dimY; y++) {
-                Point p = new Point(x, y);
-                if (targets.contains(p)) {
-                    result.append('X');
-                } else {
-                    result.append(' ');
-                }
-                if (!isConnected(p, RIGHT)) {
-                    result.append('|');
-                } else {
-                    result.append(' ');
-                }
-            }
-            result.append('\n');
-            if (x < dimX - 1) {
-                result.append('|');
-                for (int y = 0; y < dimY; y++) {
-                    Point p = new Point(x, y);
-                    if (!isConnected(p, DOWN)) {
-                        result.append('-');
-                    } else {
-                        result.append(' ');
-                    }
-                    if (y < dimY - 1) {
-                        result.append(' ');
-                    }
-                }
-                result.append('|');
-                result.append('\n');
-            }
-        }
-        for (int y = 0; y < dimY * 2 + 1; y++) {
-            result.append('-');
-        }
-        return result.toString();
+        return toString(null, targets);
     }
 
     /**
      * 
      * @param robots
-     * @param target
-     * @param targetRobot
+     * @param targets
      * @return
      */
-    public String toString(Robot[] robots, Point target) {
+    public String toString(Robot[] robots, Set<Point> targets) {
         StringBuilder result = new StringBuilder();
         HashMap<Point, Character> robotsMarkers = new HashMap<Point, Character>();
-        for (Robot robot : robots) {
-            robotsMarkers.put(robot.getPosition(), robot.getLetter());
+        if (robots != null) {
+            for (Robot robot : robots) {
+                robotsMarkers.put(robot.getPosition(), robot.getLetter());
+            }
         }
 
-        for (int y = 0; y < dimY * 2 + 1; y++) {
-            result.append('\u2588');
+        result.append(BARS[RIGHT][DOWN]);
+        for (int y = 0; y < dimY * 2 - 1; y++) {
+            result.append(BARS[UP][DOWN]);
         }
+        result.append(BARS[LEFT][DOWN]);
         result.append('\n');
+
         for (int x = 0; x < dimX; x++) {
-            result.append('\u2588');
+            result.append(BARS[LEFT][RIGHT]);
             for (int y = 0; y < dimY; y++) {
                 Point p = new Point(x, y);
                 if (robotsMarkers.containsKey(p)) {
                     result.append(robotsMarkers.get(p).charValue());
-                } else if (target.equals(p)) {
-                    result.append('X');
+                } else if (targets.contains(p)) {
+                    result.append(TARGET_CHAR);
                 } else {
-                    result.append(' ');
+                    result.append(EMPTY_FIELD_CHAR);
                 }
                 if (!isConnected(p, RIGHT)) {
-                    result.append('\u2588');
+                    result.append(BARS[LEFT][RIGHT]);
                 } else {
-                    result.append(' ');
+                    result.append(CONNECTED_CHAR);
                 }
             }
             result.append('\n');
+
             if (x < dimX - 1) {
-                result.append('\u2588');
+                result.append(BARS[LEFT][RIGHT]);
                 for (int y = 0; y < dimY; y++) {
                     Point p = new Point(x, y);
                     if (!isConnected(p, DOWN)) {
-                        result.append('\u2588');
+                        result.append(BARS[UP][DOWN]);
                     } else {
-                        result.append(' ');
+                        result.append(CONNECTED_CHAR);
                     }
                     if (y < dimY - 1) {
-                        result.append(' ');
+                        Point downRight = p.move(DOWN, RIGHT);
+                        Point right = p.move(RIGHT);
+                        Point down = p.move(DOWN);
+                        if (!isConnected(downRight, UP)
+                                && !isConnected(downRight, LEFT)) {
+                            result.append(BARS[RIGHT][DOWN]);
+                        } else if (!isConnected(right, LEFT)
+                                && !isConnected(right, DOWN)) {
+                            result.append(BARS[RIGHT][UP]);
+                        } else if (!isConnected(down, RIGHT)
+                                && !isConnected(down, UP)) {
+                            result.append(BARS[LEFT][DOWN]);
+                        } else if (!isConnected(p, RIGHT)
+                                && !isConnected(p, DOWN)) {
+                            result.append(BARS[LEFT][UP]);
+                        } else {
+                            result.append(CONNECTED_CHAR);
+                        }
                     }
                 }
-                result.append('\u2588');
+                result.append(BARS[LEFT][RIGHT]);
                 result.append('\n');
             }
         }
-        for (int y = 0; y < dimY * 2 + 1; y++) {
-            result.append('\u2588');
+        result.append(BARS[RIGHT][UP]);
+        for (int y = 0; y < dimY * 2 - 1; y++) {
+            result.append(BARS[UP][DOWN]);
         }
+        result.append(BARS[LEFT][UP]);
         return result.toString();
     }
 
@@ -291,19 +280,14 @@ public class Board {
     public static void main(String[] args) throws IOException {
         File file = new File(args[0]);
         Board board = new Board(file);
-        System.out.println(board.toString());
 
-        System.out.println();
-        System.out.println();
-        Robot[] robots = Robot.robotSet(board.getDimX(), new String[] { "Red",
-                "Yellow", "Green", "Blue" });
+        Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
+                new String[] { "Red", "Yellow", "Green", "Blue" });
         Point target = (Point) board.targets.toArray()[(int) (Math.random() * board.targets
                 .size())];
-        // System.out.println(board.toString(robots, target));
 
-        System.out.println();
-        System.out.println();
         Solver solver = new Solver(board, robots, target, 0);
+
         System.out.println(solver.moves());
 
         for (Point[] config : solver.solution()) {
@@ -311,7 +295,9 @@ public class Board {
             for (int i = 0; i < config.length; i++) {
                 robots[i].setPosition(config[i]);
             }
-            System.out.println(board.toString(robots, target));
+            HashSet<Point> thisTarget = new HashSet<Point>();
+            thisTarget.add(target);
+            System.out.println(board.toString(robots, thisTarget));
             System.out.println();
         }
     }

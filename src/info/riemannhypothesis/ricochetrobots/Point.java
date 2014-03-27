@@ -25,4 +25,14 @@ public class Point {
     public int hashCode() {
         return x ^ y;
     }
+
+    public Point move(int dir) {
+        return new Point(x + Board.OFFSETS_DIR[dir][0], y
+                + Board.OFFSETS_DIR[dir][1]);
+    }
+
+    public Point move(int dirX, int dirY) {
+        return new Point(x + Board.OFFSETS_DIR[dirX][0], y
+                + Board.OFFSETS_DIR[dirY][1]);
+    }
 }

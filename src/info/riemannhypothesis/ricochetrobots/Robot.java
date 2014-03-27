@@ -60,7 +60,7 @@ public class Robot {
         this.position = position;
     }
 
-    public static Robot[] robotSet(int dim, String[] labels) {
+    public static Robot[] robotSet(int dimX, int dimY, String[] labels) {
         Robot[] robots = new Robot[labels.length];
         HashSet<Point> positions = new HashSet<Point>();
         HashSet<Color> colors = new HashSet<Color>();
@@ -73,8 +73,8 @@ public class Robot {
             colors.add(c);
             Point p;
             do {
-                p = new Point((int) (Math.random() * dim),
-                        (int) (Math.random() * dim));
+                p = new Point((int) (Math.random() * dimX),
+                        (int) (Math.random() * dimY));
             } while (positions.contains(p));
             positions.add(p);
             robots[counter++] = new Robot(label, c, p);
@@ -82,12 +82,12 @@ public class Robot {
         return robots;
     }
 
-    public static Robot[] robotSet(int dim, int number) {
+    public static Robot[] robotSet(int dimX, int dimY, int number) {
         String[] labels = new String[number];
         for (int i = 0; i < number; i++) {
-            labels[i] = "Robot #" + (i + 1);
+            labels[i] = Integer.toString(i + 1, 10);
         }
-        return robotSet(dim, labels);
+        return robotSet(dimX, dimY, labels);
     }
 
 }
