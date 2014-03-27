@@ -5,8 +5,10 @@ package info.riemannhypothesis.ricochetrobots;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,9 +53,9 @@ public class Board {
         targets = new HashSet<Point>();
     }
 
-    public Board(File file) throws IOException {
+    public Board(InputStream is) throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(file));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
         String line = br.readLine();
         String[] dims = line.split("\\s+", 2);
@@ -63,11 +65,11 @@ public class Board {
         board = new byte[dimX][dimY];
         targets = new HashSet<Point>();
 
-        char[][] input = new char[2 * dimX - 1][2 * dimX - 1];
+        char[][] input = new char[2 * dimX - 1][2 * dimY - 1];
 
         for (int x = 0; x < 2 * dimX - 1; x++) {
             line = br.readLine();
-            for (int y = 0; y < 2 * dimY - 1; y++) {
+            for (int y = 0; y < 2 * dimY - 1 && y < line.length(); y++) {
                 input[x][y] = line.charAt(y);
             }
         }
@@ -108,6 +110,13 @@ public class Board {
 
     public int getDimY() {
         return dimY;
+    }
+
+    /**
+     * @return the targets
+     */
+    public Set<Point> getTargets() {
+        return targets;
     }
 
     public boolean isConnected(Point p, int dir) {
@@ -278,27 +287,7 @@ public class Board {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        File file = new File(args[0]);
-        Board board = new Board(file);
-
-        Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
-                new String[] { "Red", "Yellow", "Green", "Blue" });
-        Point target = (Point) board.targets.toArray()[(int) (Math.random() * board.targets
-                .size())];
-
-        Solver solver = new Solver(board, robots, target, 0);
-
-        System.out.println(solver.moves());
-
-        for (Point[] config : solver.solution()) {
-            // update robot positions
-            for (int i = 0; i < config.length; i++) {
-                robots[i].setPosition(config[i]);
-            }
-            HashSet<Point> thisTarget = new HashSet<Point>();
-            thisTarget.add(target);
-            System.out.println(board.toString(robots, thisTarget));
-            System.out.println();
-        }
+        Board board = new Board(new FileInputStream(new File(args[0])));
+        System.out.println(board.toString());
     }
 }

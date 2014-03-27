@@ -3,8 +3,12 @@
  */
 package info.riemannhypothesis.ricochetrobots;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +103,36 @@ public class Solver {
             this.configuration = configuration;
             this.moves = moves;
             this.previous = previous;
+        }
+    }
+
+    /**
+     * 
+     * @param args
+     * @throws IOException
+     */
+    public static void main(String[] args) throws IOException {
+
+        Board board = new Board(new FileInputStream(new File(args[0])));
+
+        Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
+                new String[] { "Red", "Yellow", "Green", "Blue" });
+        Point target = (Point) board.getTargets().toArray()[(int) (Math
+                .random() * board.getTargets().size())];
+
+        Solver solver = new Solver(board, robots, target, 0);
+
+        System.out.println("Found solution in " + solver.moves() + " moves:");
+
+        for (Point[] config : solver.solution()) {
+            // update robot positions
+            for (int i = 0; i < config.length; i++) {
+                robots[i].setPosition(config[i]);
+            }
+            HashSet<Point> thisTarget = new HashSet<Point>();
+            thisTarget.add(target);
+            System.out.println(board.toString(robots, thisTarget));
+            System.out.println();
         }
     }
 }
