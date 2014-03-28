@@ -164,14 +164,17 @@ public class Solver {
         System.out.println(board.toString(robots, targetSet));
         System.out.println();
 
+        long start = System.nanoTime();
         Solver solver = new Solver(board, robots, target, targetRobot, maxMoves);
+        long end = System.nanoTime();
+        double seconds = (end - start) / 1000000000.0;
 
         if (solver.solution() == null) {
-            System.out.println("No solution found in " + maxMoves + " moves.");
+            System.out.println("No solution found in " + seconds + " seconds with " + maxMoves + " moves.");
             return;
         }
 
-        System.out.println("Found solution in " + solver.moves() + " moves:");
+        System.out.println("Found solution in " + seconds + " seconds with " + solver.moves() + " moves:");
 
         int counter = 0;
         for (Point[] config : solver.solution()) {
