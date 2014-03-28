@@ -20,7 +20,7 @@ import java.util.Queue;
  */
 public class Solver {
 
-    public final static int MAX_MOVES = 7;
+    public final static int DEFAULT_MAX_MOVES = 7;
 
     private final Board board;
     private final Point target;
@@ -34,6 +34,11 @@ public class Solver {
     private final List<Point[]> solution;
 
     public Solver(Board board, Robot[] robots, Point target, int targetRobot) {
+        this(board, robots, target, targetRobot, DEFAULT_MAX_MOVES);
+    }
+
+    public Solver(Board board, Robot[] robots, Point target, int targetRobot,
+            int maxMoves) {
         // assert robots.contains(targetRobot);
         this.board = board;
         // this.robots = robots;
@@ -51,7 +56,7 @@ public class Solver {
         }
         this.targetRobotIndex = targetRobot;
 
-        this.solution = solveBruteForce(initial);
+        this.solution = solveBruteForce(initial, maxMoves);
         this.moves = this.solution == null ? -1 : this.solution.size() - 1;
     }
 
@@ -60,10 +65,12 @@ public class Solver {
      * 
      * @param initial
      *            the initial configuration of the robots
+     * @param maxMoves
+     *            the maximal number of moves to be searched
      * @return a List of configurations representing the moves of the solution
-     *         found, or null if none could be found withing {@link MAX_MOVES}.
+     *         found, or null if none could be found withing {@link maxMoves}.
      */
-    private List<Point[]> solveBruteForce(Point[] initial) {
+    private List<Point[]> solveBruteForce(Point[] initial, int maxMoves) {
         Queue<Node> queue = new LinkedList<Node>();
         queue.add(new Node(initial, 0, null));
         Node current;
@@ -73,7 +80,7 @@ public class Solver {
                 solved = true;
                 break;
             }
-            if (current.moves >= MAX_MOVES) {
+            if (current.moves >= maxMoves) {
                 continue;
             }
             for (int i = 0; i < numberRobots; i++) {
@@ -127,6 +134,8 @@ public class Solver {
     }
 
     /**
+     * Constructs a board from a file given through a command line argument and
+     * tries to solve it for a random configuration of robots.
      * 
      * @param args
      * @throws IOException
@@ -134,6 +143,14 @@ public class Solver {
     public static void main(String[] args) throws IOException {
 
         Board board = new Board(new FileInputStream(new File(args[0])));
+        int maxMoves = DEFAULT_MAX_MOVES;
+        if (args.length >= 2) {
+            try {
+                maxMoves = Integer.parseInt(args[1], 10);
+            } catch (NumberFormatException e) {
+                maxMoves = DEFAULT_MAX_MOVES;
+            }
+        }
 
         Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
                 new String[] { "Red", "Yellow", "Green", "Blue" });
@@ -147,10 +164,10 @@ public class Solver {
         System.out.println(board.toString(robots, targetSet));
         System.out.println();
 
-        Solver solver = new Solver(board, robots, target, targetRobot);
+        Solver solver = new Solver(board, robots, target, targetRobot, maxMoves);
 
         if (solver.solution() == null) {
-            System.out.println("No solution found in " + MAX_MOVES + " moves.");
+            System.out.println("No solution found in " + maxMoves + " moves.");
             return;
         }
 
