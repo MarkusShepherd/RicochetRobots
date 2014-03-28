@@ -21,6 +21,7 @@ import java.util.Queue;
 public class Solver {
 
     public final static int DEFAULT_MAX_MOVES = 7;
+    public final static double DEFAULT_MAX_TIME = 10 * 60;
 
     private final Board board;
     private final Point target;
@@ -34,11 +35,17 @@ public class Solver {
     private final List<Point[]> solution;
 
     public Solver(Board board, Robot[] robots, Point target, int targetRobot) {
-        this(board, robots, target, targetRobot, DEFAULT_MAX_MOVES);
+        this(board, robots, target, targetRobot, DEFAULT_MAX_MOVES,
+                DEFAULT_MAX_TIME);
     }
 
     public Solver(Board board, Robot[] robots, Point target, int targetRobot,
             int maxMoves) {
+        this(board, robots, target, targetRobot, maxMoves, DEFAULT_MAX_TIME);
+    }
+
+    public Solver(Board board, Robot[] robots, Point target, int targetRobot,
+            int maxMoves, double maxTime) {
         // assert robots.contains(targetRobot);
         this.board = board;
         // this.robots = robots;
@@ -56,7 +63,7 @@ public class Solver {
         }
         this.targetRobotIndex = targetRobot;
 
-        this.solution = solveBruteForce(initial, maxMoves);
+        this.solution = solveBruteForce(initial, maxMoves, maxTime);
         this.moves = this.solution == null ? -1 : this.solution.size() - 1;
     }
 
@@ -70,7 +77,10 @@ public class Solver {
      * @return a List of configurations representing the moves of the solution
      *         found, or null if none could be found withing {@link maxMoves}.
      */
-    private List<Point[]> solveBruteForce(Point[] initial, int maxMoves) {
+    private List<Point[]> solveBruteForce(Point[] initial, int maxMoves,
+            double maxTime) {
+        long start = System.nanoTime();
+        long end = (long) (start + maxTime * 1e9);
         Queue<Node> queue = new LinkedList<Node>();
         queue.add(new Node(initial, 0, null));
         Node current;
@@ -78,6 +88,9 @@ public class Solver {
         while ((current = queue.poll()) != null) {
             if (current.configuration[targetRobotIndex].equals(target)) {
                 solved = true;
+                break;
+            }
+            if (System.nanoTime() >= end) {
                 break;
             }
             if (current.moves >= maxMoves) {
@@ -152,6 +165,15 @@ public class Solver {
             }
         }
 
+        double maxTime = DEFAULT_MAX_TIME;
+        if (args.length >= 3) {
+            try {
+                maxTime = Double.parseDouble(args[2]);
+            } catch (NumberFormatException e) {
+                maxTime = DEFAULT_MAX_TIME;
+            }
+        }
+
         Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
                 new String[] { "Red", "Yellow", "Green", "Blue" });
         int targetRobot = (int) (Math.random() * robots.length);
@@ -165,16 +187,19 @@ public class Solver {
         System.out.println();
 
         long start = System.nanoTime();
-        Solver solver = new Solver(board, robots, target, targetRobot, maxMoves);
+        Solver solver = new Solver(board, robots, target, targetRobot,
+                maxMoves, maxTime);
         long end = System.nanoTime();
         double seconds = (end - start) / 1000000000.0;
 
         if (solver.solution() == null) {
-            System.out.println("No solution found in " + seconds + " seconds with " + maxMoves + " moves.");
+            System.out.println("No solution found with " + maxMoves
+                    + " moves or aborted after " + seconds + " seconds.");
             return;
         }
 
-        System.out.println("Found solution in " + seconds + " seconds with " + solver.moves() + " moves:");
+        System.out.println("Found solution in " + seconds + " seconds with "
+                + solver.moves() + " moves:");
 
         int counter = 0;
         for (Point[] config : solver.solution()) {
