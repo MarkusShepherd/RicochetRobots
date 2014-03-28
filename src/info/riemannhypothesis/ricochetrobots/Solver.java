@@ -19,6 +19,9 @@ import java.util.Queue;
  * 
  */
 public class Solver {
+
+    public final static int MAX_MOVES = 7;
+
     private final Board board;
     private final Point target;
     // private final Set<Robot> robots;
@@ -49,19 +52,29 @@ public class Solver {
         this.targetRobotIndex = targetRobot;
 
         this.solution = solveBruteForce(initial);
-        this.moves = this.solution.size() - 1;
+        this.moves = this.solution == null ? -1 : this.solution.size() - 1;
     }
 
     /**
-     * @return
+     * Finds a solution by trying out all possible moves.
+     * 
+     * @param initial
+     *            the initial configuration of the robots
+     * @return a List of configurations representing the moves of the solution
+     *         found, or null if none could be found withing {@link MAX_MOVES}.
      */
     private List<Point[]> solveBruteForce(Point[] initial) {
         Queue<Node> queue = new LinkedList<Node>();
         queue.add(new Node(initial, 0, null));
         Node current;
+        boolean solved = false;
         while ((current = queue.poll()) != null) {
             if (current.configuration[targetRobotIndex].equals(target)) {
+                solved = true;
                 break;
+            }
+            if (current.moves >= MAX_MOVES) {
+                continue;
             }
             for (int i = 0; i < numberRobots; i++) {
                 Point position = current.configuration[i];
@@ -71,11 +84,18 @@ public class Solver {
                         Point[] newConfig = Arrays.copyOf(
                                 current.configuration, numberRobots);
                         newConfig[i] = dest;
-                        queue.add(new Node(newConfig, current.moves + 1,
-                                current));
+                        if (current.previous == null
+                                || !Arrays.equals(newConfig,
+                                        current.previous.configuration)) {
+                            queue.add(new Node(newConfig, current.moves + 1,
+                                    current));
+                        }
                     }
                 }
             }
+        }
+        if (!solved) {
+            return null;
         }
         LinkedList<Point[]> result = new LinkedList<Point[]>();
         while (current != null) {
@@ -128,6 +148,11 @@ public class Solver {
         System.out.println();
 
         Solver solver = new Solver(board, robots, target, targetRobot);
+
+        if (solver.solution() == null) {
+            System.out.println("No solution found in " + MAX_MOVES + " moves.");
+            return;
+        }
 
         System.out.println("Found solution in " + solver.moves() + " moves:");
 
