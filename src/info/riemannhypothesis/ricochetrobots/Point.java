@@ -35,4 +35,9 @@ public class Point {
         return new Point(x + Board.OFFSETS_DIR[dirX][0], y
                 + Board.OFFSETS_DIR[dirY][1]);
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + "," + y + ")";
+    }
 }

@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -25,9 +24,6 @@ public class Solver {
 
     private final Board board;
     private final Point target;
-    // private final Set<Robot> robots;
-    private final Map<Robot, Integer> indexes;
-    // private final Robot targetRobot;
     private final int targetRobotIndex;
     private final int numberRobots;
     private final int moves;
@@ -46,18 +42,13 @@ public class Solver {
 
     public Solver(Board board, Robot[] robots, Point target, int targetRobot,
             int maxMoves, double maxTime) {
-        // assert robots.contains(targetRobot);
         this.board = board;
-        // this.robots = robots;
         this.target = target;
-        // this.targetRobot = targetRobot;
 
         this.numberRobots = robots.length;
-        this.indexes = new HashMap<Robot, Integer>();
         Point[] initial = new Point[numberRobots];
         int counter = 0;
         for (Robot robot : robots) {
-            indexes.put(robot, counter);
             initial[counter] = robot.getPosition();
             counter++;
         }
@@ -79,23 +70,66 @@ public class Solver {
      */
     private List<Point[]> solveBruteForce(Point[] initial, int maxMoves,
             double maxTime) {
+
         long start = System.nanoTime();
         long end = (long) (start + maxTime * 1e9);
+
         Queue<Node> queue = new LinkedList<Node>();
         queue.add(new Node(initial, 0, null));
+
         Node current;
         boolean solved = false;
+
         while ((current = queue.poll()) != null) {
+
             if (current.configuration[targetRobotIndex].equals(target)) {
                 solved = true;
                 break;
             }
+
+            Point[] configWithoutTarget = new Point[numberRobots - 1];
+            for (int i = 0, c = 0; i < numberRobots; i++) {
+                if (i == targetRobotIndex) {
+                    continue;
+                }
+                configWithoutTarget[c++] = current.configuration[i];
+            }
+
+            HashMap<Point, MoveNode> endMoves = endMoves(configWithoutTarget);
+            MoveNode moveNode = null;
+            int moves = -1;
+
+            for (Point dest : board.reachable(
+                    current.configuration[targetRobotIndex],
+                    current.configuration)) {
+                final MoveNode temp = endMoves.get(dest);
+                if (temp != null && (moveNode == null || temp.moves < moves)) {
+                    moveNode = temp;
+                    moves = temp.moves;
+                }
+            }
+
+            if (moveNode != null) {
+                while (moveNode != null) {
+                    Point[] newConfig = Arrays.copyOf(current.configuration,
+                            numberRobots);
+                    newConfig[targetRobotIndex] = moveNode.point;
+                    current = new Node(newConfig, current.moves + 1, current);
+                    queue.add(current);
+                    moveNode = moveNode.next;
+                }
+                solved = true;
+                break;
+            }
+
             if (System.nanoTime() >= end) {
                 break;
             }
+
             if (current.moves >= maxMoves) {
                 continue;
             }
+
             for (int i = 0; i < numberRobots; i++) {
                 Point position = current.configuration[i];
                 for (Point dest : board.reachable(position,
@@ -114,16 +148,94 @@ public class Solver {
                 }
             }
         }
+
         if (!solved) {
             return null;
         }
+
+        assert current.configuration[targetRobotIndex].equals(target);
+
         LinkedList<Point[]> result = new LinkedList<Point[]>();
         while (current != null) {
-            // result.add(current.configuration);
+            assert current.previous == null
+                    || legalMove(current.previous.configuration,
+                            current.configuration);
             result.addFirst(current.configuration);
             current = current.previous;
         }
         return result;
+    }
+
+    private boolean legalMove(Point[] prev, Point[] next) {
+        if (prev.length != next.length) {
+            System.out.println("Lengths don't match!");
+            return false;
+        }
+        int countDiff = 0;
+        for (int i = 0; i < prev.length; i++) {
+            if (prev[i].equals(next[i])) {
+                continue;
+            }
+            if (++countDiff > 1) {
+                System.out.println("More than one position differs!");
+                return false;
+            }
+            if (!board.reachable(prev[i], prev).contains(next[i])) {
+                System.out.println("Point " + next[i] + " not reachable from "
+                        + prev[i] + "!");
+                return false;
+            }
+        }
+        if (countDiff != 1) {
+            System.out.println("No points differed!");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param configuration
+     * @return
+     */
+    private HashMap<Point, MoveNode> endMoves(Point[] configuration) {
+        HashMap<Point, MoveNode> endMoves = new HashMap<Point, MoveNode>();
+        for (Point point : configuration) {
+            if (point.equals(target)) {
+                return endMoves;
+            }
+        }
+        MoveNode node = new MoveNode(target, 0, null);
+        endMoves.put(target, node);
+        for (int dir : Board.DIRECTIONS) {
+            if (board.isConnected(target, dir, configuration)) {
+                addToMap(endMoves, configuration, target.move(dir), 1, dir,
+                        node);
+            }
+        }
+        return endMoves;
+    }
+
+    private void addToMap(HashMap<Point, MoveNode> map, Point[] configuration,
+            Point point, int moves, int direction, MoveNode next) {
+        MoveNode existing = map.get(point);
+        if (existing != null && existing.moves <= moves) {
+            // been there, done that!
+            return;
+        }
+        MoveNode node = new MoveNode(point, moves, next);
+        map.put(point, node);
+        if (board.isConnected(point, direction, configuration)) {
+            addToMap(map, configuration, point.move(direction), moves,
+                    direction, next);
+        }
+        for (int perp : Board.PERP[direction]) {
+            if (!board.isConnected(point, perp, configuration)
+                    && board.isConnected(point, Board.OPPOSITE[perp],
+                            configuration)) {
+                addToMap(map, configuration, point.move(Board.OPPOSITE[perp]),
+                        moves + 1, Board.OPPOSITE[perp], node);
+            }
+        }
     }
 
     public int moves() {
@@ -143,6 +255,23 @@ public class Solver {
             this.configuration = configuration;
             this.moves = moves;
             this.previous = previous;
+        }
+    }
+
+    protected class MoveNode implements Comparable<MoveNode> {
+        private final Point point;
+        protected final int moves;
+        private final MoveNode next;
+
+        private MoveNode(Point point, int moves, MoveNode next) {
+            this.point = point;
+            this.moves = moves;
+            this.next = next;
+        }
+
+        @Override
+        public int compareTo(MoveNode that) {
+            return this.moves - that.moves;
         }
     }
 

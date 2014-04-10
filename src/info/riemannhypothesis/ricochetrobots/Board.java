@@ -3,6 +3,8 @@
  */
 package info.riemannhypothesis.ricochetrobots;
 
+import info.riemannhypothesis.ricochetrobots.Solver.MoveNode;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,9 @@ public class Board {
     public static final int LEFT = 2;
     public static final int DOWN = 3;
     public static final int[] DIRECTIONS = new int[] { RIGHT, UP, LEFT, DOWN };
+    public static final int[][] PERP = new int[][] { { UP, DOWN },
+            { LEFT, RIGHT }, { UP, DOWN }, { LEFT, RIGHT } };
+    public static final int[] OPPOSITE = new int[] { LEFT, DOWN, RIGHT, UP };
 
     public static final char[][] BARS = new char[][] { { ' ', '\\', '|', '/' },
             { '\\', ' ', '/', '-' }, { '|', '/', ' ', '\\' },
@@ -123,6 +128,19 @@ public class Board {
         return (board[p.x][p.y] & BITS_DIR[dir]) == BITS_DIR[dir];
     }
 
+    public boolean isConnected(Point p, int dir, Point[] blocked) {
+        if (!isConnected(p, dir)) {
+            return false;
+        }
+        Point result = p.move(dir);
+        for (Point block : blocked) {
+            if (result.equals(block)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Point dest(Point p, int dir) {
         if (!isConnected(p, dir)) {
             return p;
@@ -195,16 +213,22 @@ public class Board {
      */
     @Override
     public String toString() {
-        return toString(null, targets);
+        return toString(null, targets, null);
+    }
+
+    public String toString(Robot[] robots, Set<Point> targets) {
+        return toString(robots, targets, null);
     }
 
     /**
      * 
      * @param robots
      * @param targets
+     * @param map
      * @return
      */
-    public String toString(Robot[] robots, Set<Point> targets) {
+    public String toString(Robot[] robots, Set<Point> targets,
+            HashMap<Point, MoveNode> map) {
         StringBuilder result = new StringBuilder();
         HashMap<Point, Character> robotsMarkers = new HashMap<Point, Character>();
         if (robots != null) {
@@ -228,6 +252,9 @@ public class Board {
                     result.append(robotsMarkers.get(p).charValue());
                 } else if (targets.contains(p)) {
                     result.append(TARGET_CHAR);
+                } else if (map != null && map.containsKey(p)) {
+                    int movesToTarget = map.get(p).moves;
+                    result.append(movesToTarget);
                 } else {
                     result.append(EMPTY_FIELD_CHAR);
                 }
