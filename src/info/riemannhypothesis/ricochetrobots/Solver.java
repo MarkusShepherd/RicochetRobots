@@ -19,8 +19,8 @@ import java.util.Queue;
  */
 public class Solver {
 
-    public final static int DEFAULT_MAX_MOVES = 7;
-    public final static double DEFAULT_MAX_TIME = 10 * 60;
+    public final static int DEFAULT_MAX_MOVES = 20;
+    public final static double DEFAULT_MAX_TIME = 2 * 60;
 
     private final Board board;
     private final Point target;
