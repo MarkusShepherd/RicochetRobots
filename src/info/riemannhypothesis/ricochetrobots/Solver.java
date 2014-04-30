@@ -284,6 +284,12 @@ public class Solver {
      */
     public static void main(String[] args) throws IOException {
 
+        if (args.length == 0) {
+            System.out
+                    .println("Usage: java info.riemannhypothesis.ricochetrobots.Solver board [maxMoves [maxTimeInSec]]");
+            return;
+        }
+
         Board board = new Board(new FileInputStream(new File(args[0])));
         int maxMoves = DEFAULT_MAX_MOVES;
         if (args.length >= 2) {
@@ -313,6 +319,8 @@ public class Solver {
         System.out.println("Searching solution for robot "
                 + robots[targetRobot].getLabel() + " on board:");
         System.out.println(board.toString(robots, targetSet));
+        System.out.println("Maximal number of moves: " + maxMoves
+                + "; maximal execution time: " + maxTime + " s.");
         System.out.println();
 
         long start = System.nanoTime();
