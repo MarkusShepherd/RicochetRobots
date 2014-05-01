@@ -282,7 +282,7 @@ public class Solver {
      * @param args
      * @throws IOException
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         if (args.length == 0) {
             System.out
@@ -290,7 +290,14 @@ public class Solver {
             return;
         }
 
-        Board board = new Board(new FileInputStream(new File(args[0])));
+        Board board;
+        try {
+            board = new Board(new FileInputStream(new File(args[0])));
+        } catch (IOException e) {
+            System.out.println("*** Error: File " + args[0] + " not found ***");
+            return;
+        }
+
         int maxMoves = DEFAULT_MAX_MOVES;
         if (args.length >= 2) {
             try {
