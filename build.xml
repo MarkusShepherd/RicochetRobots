@@ -28,13 +28,19 @@
         </jar>
     </target>
     
+    <target name="input-runargs" unless="args" description="prompts for command line arguments if necessary">
+  		<input addProperty="args" message="Type the desired command line arguments:"/>
+	</target>
+	
     <!-- TODO add parameters -->
-    <target name="run" depends="jar">
-        <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
+    <target name="run" depends="jar, input-runargs" description="run the project">
+        <java jar="${jar.dir}/${ant.project.name}.jar" fork="true">
+        	<arg line="${args}"/>
+       	</java>
     </target>
     
     <target name="clean-build" depends="clean,jar"/>
     
-    <target name="main" depends="compile"/>
+    <target name="main" depends="run"/>
     
 </project>
