@@ -17,7 +17,6 @@ import java.util.Set;
 
 /**
  * @author Markus Schepke
- * 
  */
 public class Board {
 
