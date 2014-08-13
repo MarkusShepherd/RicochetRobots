@@ -1,21 +1,17 @@
-/**
- * 
- */
 package info.riemannhypothesis.ricochetrobots;
 
 import java.awt.Color;
 import java.util.HashSet;
 
 /**
- * @author MarkusSchepke
- * 
+ * @author Markus Schepke
  */
 public class Robot {
 
-    private Point position;
+    private Point        position;
     private final String label;
-    private final char letter;
-    private final Color color;
+    private final char   letter;
+    private final Color  color;
 
     public Robot(String label, Color color, Point position) {
         this.label = label;
@@ -24,30 +20,18 @@ public class Robot {
         this.position = position;
     }
 
-    /**
-     * @return the label
-     */
     public String getLabel() {
         return label;
     }
 
-    /**
-     * @return the letter
-     */
     public char getLetter() {
         return letter;
     }
 
-    /**
-     * @return the color
-     */
     public Color getColor() {
         return color;
     }
 
-    /**
-     * @return the position
-     */
     public Point getPosition() {
         return position;
     }

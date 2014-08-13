@@ -1,6 +1,3 @@
-/**
- * 
- */
 package info.riemannhypothesis.ricochetrobots;
 
 import info.riemannhypothesis.ricochetrobots.Solver.MoveNode;
@@ -20,40 +17,42 @@ import java.util.Set;
  */
 public class Board {
 
-    public static final int RIGHT = 0;
-    public static final int UP = 1;
-    public static final int LEFT = 2;
-    public static final int DOWN = 3;
-    public static final int[] DIRECTIONS = new int[] { RIGHT, UP, LEFT, DOWN };
-    public static final int[][] PERP = new int[][] { { UP, DOWN },
+    public static final int      RIGHT            = 0;
+    public static final int      UP               = 1;
+    public static final int      LEFT             = 2;
+    public static final int      DOWN             = 3;
+    public static final int[]    DIRECTIONS       = new int[] { RIGHT, UP,
+            LEFT, DOWN                           };
+    public static final int[][]  PERP             = new int[][] { { UP, DOWN },
             { LEFT, RIGHT }, { UP, DOWN }, { LEFT, RIGHT } };
-    public static final int[] OPPOSITE = new int[] { LEFT, DOWN, RIGHT, UP };
+    public static final int[]    OPPOSITE         = new int[] { LEFT, DOWN,
+            RIGHT, UP                            };
 
-    public static final char[][] BARS = new char[][] { { ' ', '\\', '|', '/' },
-            { '\\', ' ', '/', '-' }, { '|', '/', ' ', '\\' },
-            { '/', '-', '\\', ' ' } };
-    public static final char CONNECTED_CHAR = ' ';
-    public static final char EMPTY_FIELD_CHAR = '\u2591';
-    public static final char TARGET_CHAR = '\u2593';
+    public static final char[][] BARS             = new char[][] {
+            { ' ', '\\', '|', '/' }, { '\\', ' ', '/', '-' },
+            { '|', '/', ' ', '\\' }, { '/', '-', '\\', ' ' } };
+    public static final char     CONNECTED_CHAR   = ' ';
+    public static final char     EMPTY_FIELD_CHAR = '\u2591';
+    public static final char     TARGET_CHAR      = '\u2593';
 
-    private static final byte BIT_RIGHT = 0b00000001;
-    private static final byte BIT_UP = 0b00000010;
-    private static final byte BIT_LEFT = 0b00000100;
-    private static final byte BIT_DOWN = 0b00001000;
-    private static final byte[] BITS_DIR = new byte[] { BIT_RIGHT, BIT_UP,
-            BIT_LEFT, BIT_DOWN };
-    public static final byte[][] OFFSETS_DIR = new byte[][] { { 0, 1 },
-            { -1, 0 }, { 0, -1 }, { 1, 0 } };
+    private static final byte    BIT_RIGHT        = 0b00000001;
+    private static final byte    BIT_UP           = 0b00000010;
+    private static final byte    BIT_LEFT         = 0b00000100;
+    private static final byte    BIT_DOWN         = 0b00001000;
+    private static final byte[]  BITS_DIR         = new byte[] { BIT_RIGHT,
+            BIT_UP, BIT_LEFT, BIT_DOWN           };
+    public static final byte[][] OFFSETS_DIR      = new byte[][] { { 1, 0 },
+            { 0, -1 }, { -1, 0 }, { 0, 1 }       };
 
-    private final byte[][] board;
-    private final int dimX, dimY;
+    private final byte[][]       board;
+    private final int            width, height;
 
-    private final Set<Point> targets;
+    private final Set<Point>     targets;
 
     public Board(int dim) {
-        dimX = dim;
-        dimY = dim;
-        board = new byte[dimX][dimY];
+        width = dim;
+        height = dim;
+        board = new byte[height][width];
         targets = new HashSet<Point>();
     }
 
@@ -64,37 +63,37 @@ public class Board {
         String line = br.readLine();
         String[] dims = line.split("\\s+", 2);
 
-        dimX = Integer.parseInt(dims[0], 10);
-        dimY = Integer.parseInt(dims[1], 10);
-        board = new byte[dimX][dimY];
+        width = Integer.parseInt(dims[0], 10);
+        height = Integer.parseInt(dims[1], 10);
+        board = new byte[width][height];
         targets = new HashSet<Point>();
 
-        char[][] input = new char[2 * dimX - 1][2 * dimY - 1];
+        char[][] input = new char[2 * width - 1][2 * height - 1];
 
-        for (int x = 0; x < 2 * dimX - 1; x++) {
+        for (int y = 0; y < 2 * height - 1; y++) {
             line = br.readLine();
-            for (int y = 0; y < 2 * dimY - 1 && y < line.length(); y++) {
-                input[x][y] = line.charAt(y);
+            for (int x = 0; x < 2 * width - 1 && x < line.length(); x++) {
+                input[x][y] = line.charAt(x);
             }
         }
 
         br.close();
         br = null;
 
-        for (int x = 0; x < dimX; x++) {
-            for (int y = 0; y < dimY; y++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 byte tile = 0;
                 // can go left?
-                if (y > 0 && input[2 * x][2 * y - 1] != '|') {
+                if (x > 0 && input[2 * x - 1][2 * y] != '|') {
                     tile |= BIT_LEFT;
                 }
-                if (y < dimY - 1 && input[2 * x][2 * y + 1] != '|') {
+                if (x < width - 1 && input[2 * x + 1][2 * y] != '|') {
                     tile |= BIT_RIGHT;
                 }
-                if (x > 0 && input[2 * x - 1][2 * y] != '-') {
+                if (y > 0 && input[2 * x][2 * y - 1] != '-') {
                     tile |= BIT_UP;
                 }
-                if (x < dimX - 1 && input[2 * x + 1][2 * y] != '-') {
+                if (y < height - 1 && input[2 * x][2 * y + 1] != '-') {
                     tile |= BIT_DOWN;
                 }
 
@@ -108,17 +107,14 @@ public class Board {
 
     }
 
-    public int getDimX() {
-        return dimX;
+    public int getWidth() {
+        return width;
     }
 
-    public int getDimY() {
-        return dimY;
+    public int getHeight() {
+        return height;
     }
 
-    /**
-     * @return the targets
-     */
     public Set<Point> getTargets() {
         return targets;
     }
@@ -152,13 +148,6 @@ public class Board {
         return result;
     }
 
-    /**
-     * 
-     * @param p
-     * @param dir
-     * @param blocked
-     * @return
-     */
     public Point dest(Point p, int dir, Point[] blocked) {
         if (!isConnected(p, dir)) {
             return p;
@@ -178,11 +167,6 @@ public class Board {
         return result;
     }
 
-    /**
-     * 
-     * @param p
-     * @return
-     */
     public Set<Point> reachable(Point p) {
         Set<Point> result = new HashSet<Point>();
         for (int dir : DIRECTIONS) {
@@ -191,12 +175,6 @@ public class Board {
         return result;
     }
 
-    /**
-     * 
-     * @param p
-     * @param blocked
-     * @return
-     */
     public Set<Point> reachable(Point p, Point[] blocked) {
         Set<Point> result = new HashSet<Point>();
         for (int dir : DIRECTIONS) {
@@ -205,11 +183,6 @@ public class Board {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return toString(null, targets, null);
@@ -219,13 +192,6 @@ public class Board {
         return toString(robots, targets, null);
     }
 
-    /**
-     * 
-     * @param robots
-     * @param targets
-     * @param map
-     * @return
-     */
     public String toString(Robot[] robots, Set<Point> targets,
             HashMap<Point, MoveNode> map) {
         StringBuilder result = new StringBuilder();
@@ -237,16 +203,18 @@ public class Board {
         }
 
         result.append(BARS[RIGHT][DOWN]);
-        for (int y = 0; y < dimY * 2 - 1; y++) {
+        for (int x = 0; x < width * 2 - 1; x++) {
             result.append(BARS[UP][DOWN]);
         }
         result.append(BARS[LEFT][DOWN]);
         result.append('\n');
 
-        for (int x = 0; x < dimX; x++) {
+        for (int y = 0; y < height; y++) {
             result.append(BARS[LEFT][RIGHT]);
-            for (int y = 0; y < dimY; y++) {
+            for (int x = 0; x < width; x++) {
+
                 Point p = new Point(x, y);
+
                 if (robotsMarkers.containsKey(p)) {
                     result.append(robotsMarkers.get(p).charValue());
                 } else if (targets.contains(p)) {
@@ -257,42 +225,44 @@ public class Board {
                 } else {
                     result.append(EMPTY_FIELD_CHAR);
                 }
+
                 if (!isConnected(p, RIGHT)) {
                     result.append(BARS[LEFT][RIGHT]);
                 } else {
                     result.append(CONNECTED_CHAR);
                 }
             }
+
             result.append('\n');
 
-            if (x < dimX - 1) {
+            if (y < height - 1) {
                 result.append(BARS[LEFT][RIGHT]);
-                for (int y = 0; y < dimY; y++) {
+
+                for (int x = 0; x < width; x++) {
                     Point p = new Point(x, y);
+
                     if (!isConnected(p, DOWN)) {
                         result.append(BARS[UP][DOWN]);
                     } else {
                         result.append(CONNECTED_CHAR);
                     }
-                    if (y < dimY - 1) {
-                        Point downRight = p.move(DOWN, RIGHT);
-                        Point right = p.move(RIGHT);
-                        Point down = p.move(DOWN);
-                        if (!isConnected(downRight, UP)
-                                && !isConnected(downRight, LEFT)) {
-                            result.append(BARS[RIGHT][DOWN]);
-                        } else if (!isConnected(right, LEFT)
-                                && !isConnected(right, DOWN)) {
-                            result.append(BARS[RIGHT][UP]);
-                        } else if (!isConnected(down, RIGHT)
-                                && !isConnected(down, UP)) {
-                            result.append(BARS[LEFT][DOWN]);
-                        } else if (!isConnected(p, RIGHT)
-                                && !isConnected(p, DOWN)) {
-                            result.append(BARS[LEFT][UP]);
-                        } else {
-                            result.append(CONNECTED_CHAR);
-                        }
+
+                    if (x < width - 1) {
+                        /* Point downRight = p.move(DOWN, RIGHT); Point right =
+                         * p.move(RIGHT); Point down = p.move(DOWN);
+                         * 
+                         * if (!isConnected(downRight, UP) &&
+                         * !isConnected(downRight, LEFT)) {
+                         * result.append(BARS[RIGHT][DOWN]); } else if
+                         * (!isConnected(right, LEFT) && !isConnected(right,
+                         * DOWN)) { result.append(BARS[RIGHT][UP]); } else if
+                         * (!isConnected(down, RIGHT) && !isConnected(down, UP))
+                         * { result.append(BARS[LEFT][DOWN]); } else if
+                         * (!isConnected(p, RIGHT) && !isConnected(p, DOWN)) {
+                         * result.append(BARS[LEFT][UP]); } else {
+                         * result.append(CONNECTED_CHAR); } */
+
+                        result.append(CONNECTED_CHAR);
                     }
                 }
                 result.append(BARS[LEFT][RIGHT]);
@@ -300,18 +270,13 @@ public class Board {
             }
         }
         result.append(BARS[RIGHT][UP]);
-        for (int y = 0; y < dimY * 2 - 1; y++) {
+        for (int x = 0; x < width * 2 - 1; x++) {
             result.append(BARS[UP][DOWN]);
         }
         result.append(BARS[LEFT][UP]);
         return result.toString();
     }
 
-    /**
-     * 
-     * @param args
-     * @throws IOException
-     */
     public static void main(String[] args) throws IOException {
         Board board = new Board(new FileInputStream(new File(args[0])));
         System.out.println(board.toString());

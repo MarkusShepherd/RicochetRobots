@@ -13,20 +13,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import javax.swing.JFrame;
+
 /**
  * @author MarkusSchepke
  * 
  */
 public class Solver {
 
-    public final static int DEFAULT_MAX_MOVES = 20;
-    public final static double DEFAULT_MAX_TIME = 2 * 60;
+    public final static int     DEFAULT_MAX_MOVES  = 20;
+    public final static double  DEFAULT_MAX_TIME   = 2 * 60;
+    public static final int     DEFAULT_FIELD_SIZE = 45;
+    private static final long   DEFAULT_WAIT       = 1000;
 
-    private final Board board;
-    private final Point target;
-    private final int targetRobotIndex;
-    private final int numberRobots;
-    private final int moves;
+    private final Board         board;
+    private final Point         target;
+    private final int           targetRobotIndex;
+    private final int           numberRobots;
+    private final int           moves;
 
     private final List<Point[]> solution;
 
@@ -193,10 +197,6 @@ public class Solver {
         return true;
     }
 
-    /**
-     * @param configuration
-     * @return
-     */
     private HashMap<Point, MoveNode> endMoves(Point[] configuration) {
         HashMap<Point, MoveNode> endMoves = new HashMap<Point, MoveNode>();
         for (Point point : configuration) {
@@ -248,8 +248,8 @@ public class Solver {
 
     private class Node {
         private final Point[] configuration;
-        private final int moves;
-        private final Node previous;
+        private final int     moves;
+        private final Node    previous;
 
         private Node(Point[] configuration, int moves, Node previous) {
             this.configuration = configuration;
@@ -259,8 +259,8 @@ public class Solver {
     }
 
     protected class MoveNode implements Comparable<MoveNode> {
-        private final Point point;
-        protected final int moves;
+        private final Point    point;
+        protected final int    moves;
         private final MoveNode next;
 
         private MoveNode(Point point, int moves, MoveNode next) {
@@ -316,7 +316,43 @@ public class Solver {
             }
         }
 
-        Robot[] robots = Robot.robotSet(board.getDimX(), board.getDimY(),
+        boolean graphical = true;
+        if (args.length >= 4) {
+            graphical = Boolean.parseBoolean(args[3]);
+        }
+
+        int fieldWidth = DEFAULT_FIELD_SIZE;
+        int fieldHeight = DEFAULT_FIELD_SIZE;
+        long waitToRepaint = DEFAULT_WAIT;
+
+        if (graphical) {
+            if (args.length >= 5) {
+                try {
+                    waitToRepaint = Long.parseLong(args[4], 10);
+                } catch (NumberFormatException e) {
+                    waitToRepaint = DEFAULT_WAIT;
+                }
+            }
+
+            if (args.length >= 6) {
+                try {
+                    fieldWidth = Integer.parseInt(args[5], 10);
+                } catch (NumberFormatException e) {
+                    fieldWidth = DEFAULT_FIELD_SIZE;
+                }
+                fieldHeight = fieldWidth;
+            }
+
+            if (args.length >= 7) {
+                try {
+                    fieldHeight = Integer.parseInt(args[6], 10);
+                } catch (NumberFormatException e) {
+                    fieldHeight = fieldWidth;
+                }
+            }
+        }
+
+        Robot[] robots = Robot.robotSet(board.getWidth(), board.getHeight(),
                 new String[] { "Red", "Yellow", "Green", "Blue" });
         int targetRobot = (int) (Math.random() * robots.length);
         Point target = (Point) board.getTargets().toArray()[(int) (Math
@@ -343,19 +379,50 @@ public class Solver {
         }
 
         System.out.println("Found solution in " + seconds + " seconds with "
-                + solver.moves() + " moves:");
+                + solver.moves() + " moves.");
 
-        int counter = 0;
-        for (Point[] config : solver.solution()) {
-            if (counter++ == 0) {
-                continue;
+        if (graphical) {
+
+            JFrame window = new JFrame("Ricochet Robots Solver");
+
+            BoardPanel content = new BoardPanel(board, fieldWidth, fieldHeight);
+            content.setRobots(robots);
+            content.setTargets(targetSet);
+
+            window.setContentPane(content);
+            window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            window.setLocation(0, 0);
+            window.setSize(content.totalWidth, content.totalHeight + 25);
+            window.setVisible(true);
+
+            for (Point[] config : solver.solution()) {
+                // update robot positions
+                for (int i = 0; i < config.length; i++) {
+                    robots[i].setPosition(config[i]);
+                }
+
+                try {
+                    Thread.sleep(waitToRepaint);
+                } catch (InterruptedException e) {
+                }
+
+                content.repaint();
             }
-            // update robot positions
-            for (int i = 0; i < config.length; i++) {
-                robots[i].setPosition(config[i]);
+
+        } else {
+
+            int counter = 0;
+            for (Point[] config : solver.solution()) {
+                if (counter++ == 0) {
+                    continue;
+                }
+                // update robot positions
+                for (int i = 0; i < config.length; i++) {
+                    robots[i].setPosition(config[i]);
+                }
+                System.out.println(board.toString(robots, targetSet));
+                System.out.println();
             }
-            System.out.println(board.toString(robots, targetSet));
-            System.out.println();
         }
     }
 }
