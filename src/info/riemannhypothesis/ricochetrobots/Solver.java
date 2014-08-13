@@ -359,12 +359,15 @@ public class Solver {
                 .random() * board.getTargets().size())];
         HashSet<Point> targetSet = new HashSet<Point>();
         targetSet.add(target);
-        System.out.println("Searching solution for robot "
-                + robots[targetRobot].getLabel() + " on board:");
-        System.out.println(board.toString(robots, targetSet));
-        System.out.println("Maximal number of moves: " + maxMoves
-                + "; maximal execution time: " + maxTime + " s.");
-        System.out.println();
+
+        if (!graphical) {
+            System.out.println("Searching solution for robot "
+                    + robots[targetRobot].getLabel() + " on board:");
+            System.out.println(board.toString(robots, targetSet));
+            System.out.println("Maximal number of moves: " + maxMoves
+                    + "; maximal execution time: " + maxTime + " s.");
+            System.out.println();
+        }
 
         long start = System.nanoTime();
         Solver solver = new Solver(board, robots, target, targetRobot,
@@ -378,15 +381,14 @@ public class Solver {
             return;
         }
 
-        System.out.println("Found solution in " + seconds + " seconds with "
-                + solver.moves() + " moves.");
+        System.out.println("Found solution in " + seconds
+                + " seconds with " + solver.moves() + " moves.");
 
         if (graphical) {
 
             JFrame window = new JFrame("Ricochet Robots Solver");
 
             BoardPanel content = new BoardPanel(board, fieldWidth, fieldHeight);
-            content.setRobots(robots);
             content.setTargets(targetSet);
 
             window.setContentPane(content);
@@ -395,18 +397,33 @@ public class Solver {
             window.setSize(content.totalWidth, content.totalHeight + 25);
             window.setVisible(true);
 
-            for (Point[] config : solver.solution()) {
-                // update robot positions
-                for (int i = 0; i < config.length; i++) {
-                    robots[i].setPosition(config[i]);
-                }
+            while (true) {
+
+                content.setRobots(null);
+                content.repaint();
 
                 try {
                     Thread.sleep(waitToRepaint);
                 } catch (InterruptedException e) {
                 }
 
+                content.setRobots(robots);
                 content.repaint();
+
+                for (Point[] config : solver.solution()) {
+                    // update robot positions
+                    for (int i = 0; i < config.length; i++) {
+                        robots[i].setPosition(config[i]);
+                    }
+
+                    try {
+                        Thread.sleep(waitToRepaint);
+                    } catch (InterruptedException e) {
+                    }
+
+                    content.repaint();
+                }
+
             }
 
         } else {
