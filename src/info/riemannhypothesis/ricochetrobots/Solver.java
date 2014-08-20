@@ -3,6 +3,7 @@
  */
 package info.riemannhypothesis.ricochetrobots;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -353,7 +354,8 @@ public class Solver {
         }
 
         Robot[] robots = Robot.robotSet(board.getWidth(), board.getHeight(),
-                new String[] { "Red", "Yellow", "Green", "Blue" });
+                new String[] { "Red", "Yellow", "Green", "Blue" }, new Color[] {
+                        Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE });
         int targetRobot = (int) (Math.random() * robots.length);
         Point target = (Point) board.getTargets().toArray()[(int) (Math
                 .random() * board.getTargets().size())];
@@ -381,12 +383,13 @@ public class Solver {
             return;
         }
 
-        System.out.println("Found solution in " + seconds
-                + " seconds with " + solver.moves() + " moves.");
+        System.out.println("Found solution in " + seconds + " seconds with "
+                + solver.moves() + " moves.");
 
         if (graphical) {
 
-            JFrame window = new JFrame("Ricochet Robots Solver");
+            JFrame window = new JFrame("Move " + robots[targetRobot].getLabel()
+                    + " to target with " + solver.moves() + " moves.");
 
             BoardPanel content = new BoardPanel(board, fieldWidth, fieldHeight);
             content.setTargets(targetSet);

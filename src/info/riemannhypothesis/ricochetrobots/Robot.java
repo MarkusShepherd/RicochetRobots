@@ -44,26 +44,34 @@ public class Robot {
         this.position = position;
     }
 
-    public static Robot[] robotSet(int dimX, int dimY, String[] labels) {
+    public static Robot[] robotSet(int dimX, int dimY, String[] labels,
+            Color[] colors) {
         Robot[] robots = new Robot[labels.length];
         HashSet<Point> positions = new HashSet<Point>();
-        HashSet<Color> colors = new HashSet<Color>();
         int counter = 0;
         for (String label : labels) {
-            Color c;
-            do {
-                c = new Color((int) (Math.random() * 16777216));
-            } while (colors.contains(c));
-            colors.add(c);
             Point p;
             do {
                 p = new Point((int) (Math.random() * dimX),
                         (int) (Math.random() * dimY));
             } while (positions.contains(p));
             positions.add(p);
-            robots[counter++] = new Robot(label, c, p);
+            robots[counter] = new Robot(label, colors[counter], p);
+            counter++;
         }
         return robots;
+    }
+
+    public static Robot[] robotSet(int dimX, int dimY, String[] labels) {
+        HashSet<Color> colors = new HashSet<Color>();
+        for (int i = 0; i < labels.length; i++) {
+            Color c;
+            do {
+                c = new Color((int) (Math.random() * 16777216));
+            } while (colors.contains(c));
+            colors.add(c);
+        }
+        return robotSet(dimX, dimY, labels, (Color[]) colors.toArray());
     }
 
     public static Robot[] robotSet(int dimX, int dimY, int number) {
