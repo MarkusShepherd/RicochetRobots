@@ -3,6 +3,15 @@ RicochetRobots
 
 A simple implementation of Alex Randolph's board game Ricochet Robots including solver
 
+Compile
+-------
+
+Compile the Java code with the command:
+
+```bash
+javac -d bin src/info/riemannhypothesis/ricochetrobots/*.java
+```
+
 Run
 ---
 

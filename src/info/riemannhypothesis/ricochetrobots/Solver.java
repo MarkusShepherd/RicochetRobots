@@ -353,10 +353,26 @@ public class Solver {
             }
         }
 
-        Robot[] robots = Robot.robotSet(board.getWidth(), board.getHeight(),
-                new String[] { "Red", "Yellow", "Green", "Blue" }, new Color[] {
-                        Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE });
-        int targetRobot = (int) (Math.random() * robots.length);
+        Robot[] robots = null;
+        int targetRobot = 0;
+        
+        try {
+        	robots = Robot.robotSet(new FileInputStream(new File(args[0])));
+        	targetRobot = 0;
+        } catch (IOException e) {
+        	System.out.println(e);
+        	System.out.println(e.getStackTrace());
+        	robots = null;
+        }
+        
+        if (robots == null) {
+        	System.out.println("File contains no information on robots, use random.");
+	        robots = Robot.robotSet(board.getWidth(), board.getHeight(),
+	                new String[] { "Red", "Yellow", "Green", "Blue" }, new Color[] {
+	                        Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE });
+	        targetRobot = (int) (Math.random() * robots.length);
+        }
+
         Point target = (Point) board.getTargets().toArray()[(int) (Math
                 .random() * board.getTargets().size())];
         HashSet<Point> targetSet = new HashSet<Point>();
