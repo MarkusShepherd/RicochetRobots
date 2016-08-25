@@ -29,8 +29,8 @@ E.g., if you want to solve the board 3 in the repository, simply run
 ./solve.sh -b boards/3.txt -g
 ```
 
- For a full description of all available command line options, simply type
+For a full description of all available command line options, simply type
  
- ```bash
+```bash
 ./solve.sh
 ```
