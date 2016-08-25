@@ -2,11 +2,14 @@ package info.riemannhypothesis.ricochetrobots;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -116,6 +119,14 @@ public class BoardPanel extends JPanel {
             }
         }
     }
+
+	public void save(String fileName, String formatName) throws IOException {
+		BufferedImage image = new BufferedImage(getWidth(), getHeight(),
+				BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics2D = image.createGraphics();
+		paint(graphics2D);
+		ImageIO.write(image, formatName, new File(fileName));
+	}
 
     public static void main(String[] args) throws IOException {
         Board board = new Board(new FileInputStream(new File(args[0])));

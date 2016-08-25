@@ -283,7 +283,7 @@ public class Solver {
      * @param args
      * @throws IOException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
             System.out
@@ -416,6 +416,7 @@ public class Solver {
             window.setSize(content.totalWidth, content.totalHeight + 25);
             window.setVisible(true);
 
+            boolean saveImage = true;
             while (true) {
 
                 content.setRobots(null);
@@ -429,6 +430,8 @@ public class Solver {
                 content.setRobots(robots);
                 content.repaint();
 
+                int count = 0;
+
                 for (Point[] config : solver.solution()) {
                     // update robot positions
                     for (int i = 0; i < config.length; i++) {
@@ -441,8 +444,12 @@ public class Solver {
                     }
 
                     content.repaint();
+
+                    if (saveImage)
+                    	content.save("image" + (count++) + ".png", "png");
                 }
 
+                saveImage = false;
             }
 
         } else {
