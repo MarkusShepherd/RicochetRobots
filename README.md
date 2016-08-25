@@ -9,7 +9,7 @@ Compile
 Compile the Java code with the command:
 
 ```bash
-javac -d bin src/info/riemannhypothesis/ricochetrobots/*.java
+javac -cp lib/commons-cli-1.3.1.jar -d bin src/info/riemannhypothesis/ricochetrobots/*.java
 ```
 
 Run
@@ -18,7 +18,7 @@ Run
 To run, type
 
 ```bash
-./solve.sh board [maxMoves [maxTimeInSec]]
+./solve.sh -b board -g
 ```
 
 This will place four robots in random positions on the board, pick on of the targets and on of the robots to reach it, try to find a solution (within the move and time contraints specified), and the give a graphical representation of the moves.
@@ -26,5 +26,11 @@ This will place four robots in random positions on the board, pick on of the tar
 E.g., if you want to solve the board 3 in the repository, simply run
 
 ```bash
-./solve.sh boards/3.txt
+./solve.sh -b boards/3.txt -g
+```
+
+ For a full description of all available command line options, simply type
+ 
+ ```bash
+./solve.sh
 ```
