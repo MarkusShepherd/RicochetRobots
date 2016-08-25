@@ -120,12 +120,12 @@ public class BoardPanel extends JPanel {
         }
     }
 
-	public void save(String fileName, String formatName) throws IOException {
+	public void save(File file, String formatName) throws IOException {
 		BufferedImage image = new BufferedImage(getWidth(), getHeight(),
 				BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics2D = image.createGraphics();
 		paint(graphics2D);
-		ImageIO.write(image, formatName, new File(fileName));
+		ImageIO.write(image, formatName, file);
 	}
 
     public static void main(String[] args) throws IOException {

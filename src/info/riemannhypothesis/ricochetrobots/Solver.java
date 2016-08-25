@@ -16,6 +16,14 @@ import java.util.Queue;
 
 import javax.swing.JFrame;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 /**
  * @author MarkusSchepke
  * 
@@ -24,7 +32,7 @@ public class Solver {
 
     public final static int     DEFAULT_MAX_MOVES  = 20;
     public final static double  DEFAULT_MAX_TIME   = 2 * 60;
-    public static final int     DEFAULT_FIELD_SIZE = 45;
+    public static final int     DEFAULT_FIELD_SIZE = 30;
     private static final long   DEFAULT_WAIT       = 1000;
 
     private final Board         board;
@@ -282,82 +290,74 @@ public class Solver {
      * 
      * @param args
      * @throws IOException
+     * @throws ParseException 
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
 
-        if (args.length == 0) {
-            System.out
-                    .println("Usage: java info.riemannhypothesis.ricochetrobots.Solver board [maxMoves [maxTimeInSec]]");
-            return;
-        }
+		Options options = new Options();
 
-        Board board;
+		options.addOption(Option.builder("b").longOpt("board").required(true)
+				.hasArg().desc("board file path").build());
+		options.addOption(Option.builder("m").longOpt("max-moves").hasArg()
+				.type(Integer.class).desc("maximal number of moves").build());
+		options.addOption(Option.builder("t").longOpt("max-time").hasArg()
+				.type(Double.class).desc("maximal time").build());
+		options.addOption(Option.builder("g").longOpt("graphical")
+				.desc("graphical representation").build());
+		options.addOption(Option.builder("w").longOpt("width").hasArg()
+				.type(Integer.class).desc("field width").build());
+		options.addOption(Option.builder("h").longOpt("height").hasArg()
+				.type(Integer.class).desc("field height").build());
+		options.addOption(Option.builder("r").longOpt("repaint").hasArg()
+				.type(Long.class).desc("wait to repaint").build());
+		options.addOption(Option.builder("i").longOpt("image").hasArg()
+				.desc("image dir path").build());
+
+		CommandLineParser parser = new DefaultParser();
+		HelpFormatter formatter = new HelpFormatter();
+		CommandLine cmd;
+
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			System.out.println(e.getMessage());
+			formatter.printHelp("Solver", options);
+			System.exit(1);
+			return;
+		}
+
+		String boardFile = cmd.getOptionValue("board");
+		int maxMoves = Integer.parseInt(
+				cmd.getOptionValue("max-moves",
+						Integer.toString(DEFAULT_MAX_MOVES, 10)), 10);
+		double maxTime = Double.parseDouble(cmd.getOptionValue("max-time",
+				Double.toString(DEFAULT_MAX_TIME)));
+		boolean graphical = cmd.hasOption("graphical");
+		int fieldWidth = Integer.parseInt(
+				cmd.getOptionValue("width",
+						Integer.toString(DEFAULT_FIELD_SIZE, 10)), 10);
+		int fieldHeight = Integer.parseInt(
+				cmd.getOptionValue("height", Integer.toString(fieldWidth, 10)),
+				10);
+		long waitToRepaint = Long.parseLong(
+				cmd.getOptionValue("wait-repaint",
+						Long.toString(DEFAULT_WAIT, 10)), 10);
+		String imageDir = cmd.getOptionValue("image", null);
+		boolean saveImage = imageDir != null;
+
+		Board board;
         try {
-            board = new Board(new FileInputStream(new File(args[0])));
+            board = new Board(new FileInputStream(new File(boardFile)));
         } catch (IOException e) {
-            System.out.println("*** Error: File " + args[0] + " not found ***");
+            System.out.println("*** Error: File " + boardFile + " not found ***");
             return;
-        }
-
-        int maxMoves = DEFAULT_MAX_MOVES;
-        if (args.length >= 2) {
-            try {
-                maxMoves = Integer.parseInt(args[1], 10);
-            } catch (NumberFormatException e) {
-                maxMoves = DEFAULT_MAX_MOVES;
-            }
-        }
-
-        double maxTime = DEFAULT_MAX_TIME;
-        if (args.length >= 3) {
-            try {
-                maxTime = Double.parseDouble(args[2]);
-            } catch (NumberFormatException e) {
-                maxTime = DEFAULT_MAX_TIME;
-            }
-        }
-
-        boolean graphical = true;
-        if (args.length >= 4) {
-            graphical = Boolean.parseBoolean(args[3]);
-        }
-
-        int fieldWidth = DEFAULT_FIELD_SIZE;
-        int fieldHeight = DEFAULT_FIELD_SIZE;
-        long waitToRepaint = DEFAULT_WAIT;
-
-        if (graphical) {
-            if (args.length >= 5) {
-                try {
-                    waitToRepaint = Long.parseLong(args[4], 10);
-                } catch (NumberFormatException e) {
-                    waitToRepaint = DEFAULT_WAIT;
-                }
-            }
-
-            if (args.length >= 6) {
-                try {
-                    fieldWidth = Integer.parseInt(args[5], 10);
-                } catch (NumberFormatException e) {
-                    fieldWidth = DEFAULT_FIELD_SIZE;
-                }
-                fieldHeight = fieldWidth;
-            }
-
-            if (args.length >= 7) {
-                try {
-                    fieldHeight = Integer.parseInt(args[6], 10);
-                } catch (NumberFormatException e) {
-                    fieldHeight = fieldWidth;
-                }
-            }
         }
 
         Robot[] robots = null;
         int targetRobot = 0;
         
         try {
-        	robots = Robot.robotSet(new FileInputStream(new File(args[0])));
+        	robots = Robot.robotSet(new FileInputStream(new File(boardFile)));
         	targetRobot = 0;
         } catch (IOException e) {
         	System.out.println(e);
@@ -388,8 +388,8 @@ public class Solver {
         }
 
         long start = System.nanoTime();
-        Solver solver = new Solver(board, robots, target, targetRobot,
-                maxMoves, maxTime);
+		Solver solver = new Solver(board, robots, target, targetRobot,
+				maxMoves, maxTime);
         long end = System.nanoTime();
         double seconds = (end - start) / 1000000000.0;
 
@@ -403,6 +403,11 @@ public class Solver {
                 + solver.moves() + " moves.");
 
         if (graphical) {
+        	File dir = null;
+        	if (saveImage) {
+        		dir = new File(imageDir);
+        		dir.mkdirs();
+        	}
 
             JFrame window = new JFrame("Move " + robots[targetRobot].getLabel()
                     + " to target with " + solver.moves() + " moves.");
@@ -416,7 +421,6 @@ public class Solver {
             window.setSize(content.totalWidth, content.totalHeight + 25);
             window.setVisible(true);
 
-            boolean saveImage = true;
             while (true) {
 
                 content.setRobots(null);
@@ -445,8 +449,10 @@ public class Solver {
 
                     content.repaint();
 
-                    if (saveImage)
-                    	content.save("image" + (count++) + ".png", "png");
+					if (saveImage)
+						content.save(
+								new File(dir, String.format("image%03d.png",
+										count++)), "png");
                 }
 
                 saveImage = false;
