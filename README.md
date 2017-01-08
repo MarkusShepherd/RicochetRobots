@@ -18,7 +18,7 @@ Run
 To run, type
 
 ```bash
-./solve.sh -b board -g
+./solve.sh -b <board> -g
 ```
 
 This will place four robots in random positions on the board, pick one of the targets and one of the robots to reach it, try to find a solution (within the move and time contraints specified), and then give a graphical representation of the moves.
