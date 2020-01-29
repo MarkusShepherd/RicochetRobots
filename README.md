@@ -1,19 +1,17 @@
-RicochetRobots
-==============
+# RicochetRobots
 
 A simple implementation of Alex Randolph's board game Ricochet Robots including solver.
 
-Compile
--------
+## Compile
 
 Compile the Java code with the command:
 
 ```bash
+mkdir --parents bin
 javac -cp lib/commons-cli-1.3.1.jar -d bin src/info/riemannhypothesis/ricochetrobots/*.java
 ```
 
-Run
----
+## Run
 
 To run, type
 
@@ -21,7 +19,10 @@ To run, type
 ./solve.sh -b <board> -g
 ```
 
-This will place four robots in random positions on the board, pick one of the targets and one of the robots to reach it, try to find a solution (within the move and time contraints specified), and then give a graphical representation of the moves.
+This will place four robots in random positions on the board, pick one of the
+targets and one of the robots to reach it, try to find a solution (within the
+move and time contraints specified), and then give a graphical representation
+of the moves.
 
 E.g., if you want to solve the board 3 in the repository, simply run
 
@@ -30,7 +31,7 @@ E.g., if you want to solve the board 3 in the repository, simply run
 ```
 
 For a full description of all available command line options, simply type
- 
+
 ```bash
 ./solve.sh
 ```
