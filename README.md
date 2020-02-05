@@ -8,7 +8,9 @@ Compile the Java code with the command:
 
 ```bash
 mkdir --parents bin
-javac -cp lib/commons-cli-1.3.1.jar -d bin src/info/riemannhypothesis/ricochetrobots/*.java
+javac -classpath java/lib/commons-cli-1.3.1.jar \
+    -d bin \
+    java/src/info/riemannhypothesis/ricochetrobots/*.java
 ```
 
 ## Run
