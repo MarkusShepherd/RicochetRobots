@@ -3,7 +3,7 @@
 """Board classes."""
 
 from enum import Enum
-from typing import Any, Tuple
+from typing import Any, Iterable, Optional, Tuple
 
 
 class Direction(Enum):
@@ -73,3 +73,24 @@ class Point:
     def move(self: "Point", direction: Direction) -> "Point":
         """Move this point in the given direction."""
         return Point(self.row + direction.offset[0], self.col + direction.offset[1])
+
+
+class Tile(Point):
+    """A tile on the board."""
+
+    def __init__(
+        self: "Tile",
+        row: int,
+        col: int,
+        accessible: bool = True,
+        connected: Optional[Iterable[Direction]] = None,
+    ) -> None:
+        super().__init__(row, col)
+        connected = () if not accessible or connected is None else connected
+        self.accessible = accessible
+        self.connected = frozenset(connected)
+
+    def move(self: "Tile", direction: Direction) -> Point:
+        if not self.accessible or direction not in self.connected:
+            return self
+        return super().move(direction)
