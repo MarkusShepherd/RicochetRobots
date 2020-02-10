@@ -34,7 +34,7 @@ VERSION = None  # will be read from __version__.py
 REQUIRED = ()
 
 # What packages are optional?
-EXTRAS = {}
+EXTRAS = {"gui": ("pygame",)}
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
