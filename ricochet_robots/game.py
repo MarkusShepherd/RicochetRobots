@@ -4,7 +4,10 @@
 
 from collections import defaultdict
 from enum import Enum
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, FrozenSet, Iterable, List, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pygame
 
 BARS = (
     (" ", "\\", "|", "/"),
@@ -29,7 +32,7 @@ class Robot:
     def __init__(
         self: "Robot",
         name: str,
-        color: Optional["Color"] = None,
+        color: Optional["pygame.Color"] = None,
         tile: Optional[Tile] = None,
     ) -> None:
         self.name = name
@@ -91,6 +94,12 @@ class Tile:
 class Board:
     """The game board."""
 
+    height: int
+    width: int
+    robots: FrozenSet[Robot]
+    tiles: Tuple[Tuple[Tile, ...], ...]
+    targets: Dict[Robot, Tuple[Tile, ...]]
+
     def __init__(
         self, robots: Iterable[Robot], tiles: Iterable[Iterable[Tile]]
     ) -> None:
@@ -110,4 +119,6 @@ class Board:
                     assert tile.target in self.robots
                     targets[tile.target].append(tile)
 
-        self.targets = targets
+        self.targets = {
+            robot: tuple(target_list) for robot, target_list in targets.items()
+        }
