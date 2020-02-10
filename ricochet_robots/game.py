@@ -2,8 +2,39 @@
 
 """Board classes."""
 
+from collections import defaultdict
 from enum import Enum
-from typing import Any, Iterable, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
+
+BARS = (
+    (" ", "\\", "|", "/"),
+    ("\\", " ", "/", "-"),
+    ("|", "/", " ", "\\"),
+    ("/", "-", "\\", " "),
+)
+CONNECTED_CHAR = " "
+EMPTY_FIELD_CHAR = "\u2591"
+TARGET_CHAR = "\u2593"
+
+BIT_RIGHT = 0b00000001
+BIT_UP = 0b00000010
+BIT_LEFT = 0b00000100
+BIT_DOWN = 0b00001000
+BITS_DIR = (BIT_RIGHT, BIT_UP, BIT_LEFT, BIT_DOWN)
+
+
+class Robot:
+    """A robot."""
+
+    def __init__(
+        self: "Robot",
+        name: str,
+        color: Optional["Color"] = None,
+        tile: Optional[Tile] = None,
+    ) -> None:
+        self.name = name
+        self.color = color
+        self.tile = tile
 
 
 class Direction(Enum):
@@ -32,50 +63,7 @@ class Direction(Enum):
         return (Direction[self._perp[0]], Direction[self._perp[1]])
 
 
-BARS = (
-    (" ", "\\", "|", "/"),
-    ("\\", " ", "/", "-"),
-    ("|", "/", " ", "\\"),
-    ("/", "-", "\\", " "),
-)
-CONNECTED_CHAR = " "
-EMPTY_FIELD_CHAR = "\u2591"
-TARGET_CHAR = "\u2593"
-
-BIT_RIGHT = 0b00000001
-BIT_UP = 0b00000010
-BIT_LEFT = 0b00000100
-BIT_DOWN = 0b00001000
-BITS_DIR = (BIT_RIGHT, BIT_UP, BIT_LEFT, BIT_DOWN)
-
-
-class Point:
-    """A point on the board."""
-
-    def __init__(self: "Point", row: int, col: int) -> None:
-        self.row = row
-        self.col = col
-
-    def __eq__(self: "Point", other: Any) -> bool:
-        return (
-            isinstance(other, Point) and self.row == other.row and self.col == other.col
-        )
-
-    def __hash__(self: "Point") -> int:
-        return hash(self.row) ^ hash(self.col)
-
-    def __str__(self: "Point") -> str:
-        return f"{type(self).__name__}({self.row}, {self.col})"
-
-    def __repr__(self: "Point") -> str:
-        return f"{type(self)}({self.row}, {self.col})"
-
-    def move(self: "Point", direction: Direction) -> "Point":
-        """Move this point in the given direction."""
-        return Point(self.row + direction.offset[0], self.col + direction.offset[1])
-
-
-class Tile(Point):
+class Tile:
     """A tile on the board."""
 
     def __init__(
@@ -84,13 +72,42 @@ class Tile(Point):
         col: int,
         accessible: bool = True,
         connected: Optional[Iterable[Direction]] = None,
+        target: Optional[Robot] = None,
     ) -> None:
-        super().__init__(row, col)
-        connected = () if not accessible or connected is None else connected
+        self.row = row
+        self.col = col
         self.accessible = accessible
+        connected = () if not accessible or connected is None else connected
         self.connected = frozenset(connected)
+        self.target = target
 
-    def move(self: "Tile", direction: Direction) -> Point:
-        if not self.accessible or direction not in self.connected:
-            return self
-        return super().move(direction)
+    def __str__(self: "Tile") -> str:
+        return f"{type(self).__name__}({self.row}, {self.col})"
+
+    def __repr__(self: "Tile") -> str:
+        return f"{type(self)}({self.row}, {self.col})"
+
+
+class Board:
+    """The game board."""
+
+    def __init__(
+        self, robots: Iterable[Robot], tiles: Iterable[Iterable[Tile]]
+    ) -> None:
+        self.robots = frozenset(robots)
+        self.tiles = tuple(tuple(row) for row in tiles)
+        self.height = len(self.tiles)
+        self.width = len(self.tiles[0])
+
+        targets: Dict[Robot, List[Tile]] = defaultdict(list)
+
+        for row_n, row in enumerate(self.tiles):
+            assert len(row) == self.width
+            for col_n, tile in enumerate(row):
+                assert isinstance(tile, Tile)
+                assert tile.row == row_n and tile.col == col_n
+                if tile.target is not None:
+                    assert tile.target in self.robots
+                    targets[tile.target].append(tile)
+
+        self.targets = targets
