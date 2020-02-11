@@ -69,6 +69,12 @@ class Direction(Enum):
 class Tile:
     """A tile on the board."""
 
+    row: int
+    col: int
+    accessible: bool = True
+    connected: FrozenSet[Direction] = frozenset()
+    target: Optional[Robot] = None
+
     def __init__(
         self: "Tile",
         row: int,
@@ -94,8 +100,8 @@ class Tile:
 class Board:
     """The game board."""
 
-    height: int
-    width: int
+    num_rows: int
+    num_cols: int
     robots: FrozenSet[Robot]
     tiles: Tuple[Tuple[Tile, ...], ...]
     targets: Dict[Robot, Tuple[Tile, ...]]
@@ -105,13 +111,13 @@ class Board:
     ) -> None:
         self.robots = frozenset(robots)
         self.tiles = tuple(tuple(row) for row in tiles)
-        self.height = len(self.tiles)
-        self.width = len(self.tiles[0])
+        self.num_rows = len(self.tiles)
+        self.num_cols = len(self.tiles[0])
 
         targets: Dict[Robot, List[Tile]] = defaultdict(list)
 
         for row_n, row in enumerate(self.tiles):
-            assert len(row) == self.width
+            assert len(row) == self.num_cols
             for col_n, tile in enumerate(row):
                 assert isinstance(tile, Tile)
                 assert tile.row == row_n and tile.col == col_n
@@ -122,3 +128,17 @@ class Board:
         self.targets = {
             robot: tuple(target_list) for robot, target_list in targets.items()
         }
+
+    def blocked(self: "Board", tile: Tile) -> bool:
+        if not tile.accessible:
+            return True
+        return any(robot.tile == tile for robot in self.robots)
+
+    def connected(self: "Board", tile: Tile, direction: Direction) -> bool:
+        if not tile.accessible or direction not in tile.connected:
+            return False
+        dest_row, dest_col = (tile.row, tile.col) + direction.offset
+        if not 0 <= dest_row < self.num_rows or not 0 <= dest_col < self.num_cols:
+            return False
+        dest_tile = self.tiles[dest_row][dest_col]
+        return not dest_tile.accessible and not self.blocked(dest_tile)
