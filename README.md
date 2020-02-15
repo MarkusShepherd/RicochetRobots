@@ -1,6 +1,7 @@
-# RicochetRobots
+# Ricochet Robots 🤖
 
-A simple implementation of Alex Randolph's board game Ricochet Robots including solver.
+A Python implementation of Alex Randolph's game
+[*Ricochet Robots*](https://recommend.games/#/game/51) including solver.
 
 ## Compile
 
