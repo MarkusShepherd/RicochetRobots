@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
-"""Board classes."""
+"""Board classes (game UI representation)."""
 
 from collections import defaultdict
 from enum import Enum
-from typing import Dict, FrozenSet, Iterable, List, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 if TYPE_CHECKING:
     import pygame
@@ -30,10 +28,10 @@ class Robot:
     """A robot."""
 
     def __init__(
-        self: "Robot",
+        self,
         name: str,
-        color: Optional["pygame.Color"] = None,
-        tile: Optional["Tile"] = None,
+        color: "pygame.Color | None" = None,
+        tile: "Tile | None" = None,
     ) -> None:
         self.name = name
         self.color = color
@@ -49,19 +47,19 @@ class Direction(Enum):
     DOWN = ("UP", ("LEFT", "RIGHT"), (0, +1))
 
     def __init__(
-        self: "Direction", opposite: str, perp: Tuple[str, str], offset: Tuple[int, int]
+        self, opposite: str, perp: tuple[str, str], offset: tuple[int, int]
     ) -> None:
         self._opposite = opposite
         self._perp = perp
         self.offset = offset
 
     @property
-    def opposite(self: "Direction") -> "Direction":
+    def opposite(self) -> Direction:
         """Opposite direction."""
         return Direction[self._opposite]
 
     @property
-    def perp(self: "Direction") -> Tuple["Direction", "Direction"]:
+    def perp(self) -> tuple[Direction, Direction]:
         """Perpendicular direction."""
         return (Direction[self._perp[0]], Direction[self._perp[1]])
 
@@ -72,16 +70,16 @@ class Tile:
     row: int
     col: int
     accessible: bool = True
-    connected: FrozenSet[Direction] = frozenset()
-    target: Optional[Robot] = None
+    connected: frozenset[Direction] = frozenset()
+    target: Robot | None = None
 
     def __init__(
-        self: "Tile",
+        self,
         row: int,
         col: int,
         accessible: bool = True,
-        connected: Optional[Iterable[Direction]] = None,
-        target: Optional[Robot] = None,
+        connected: Iterable[Direction] | None = None,
+        target: Robot | None = None,
     ) -> None:
         self.row = row
         self.col = col
@@ -90,10 +88,10 @@ class Tile:
         self.connected = frozenset(connected)
         self.target = target
 
-    def __str__(self: "Tile") -> str:
+    def __str__(self) -> str:
         return f"{type(self).__name__}({self.row}, {self.col})"
 
-    def __repr__(self: "Tile") -> str:
+    def __repr__(self) -> str:
         return f"{type(self)}({self.row}, {self.col})"
 
 
@@ -102,9 +100,9 @@ class Board:
 
     num_rows: int
     num_cols: int
-    robots: FrozenSet[Robot]
-    tiles: Tuple[Tuple[Tile, ...], ...]
-    targets: Dict[Robot, Tuple[Tile, ...]]
+    robots: frozenset[Robot]
+    tiles: tuple[tuple[Tile, ...], ...]
+    targets: dict[Robot, tuple[Tile, ...]]
 
     def __init__(
         self, robots: Iterable[Robot], tiles: Iterable[Iterable[Tile]]
@@ -114,7 +112,7 @@ class Board:
         self.num_rows = len(self.tiles)
         self.num_cols = len(self.tiles[0])
 
-        targets: Dict[Robot, List[Tile]] = defaultdict(list)
+        targets: dict[Robot, list[Tile]] = defaultdict(list)
 
         for row_n, row in enumerate(self.tiles):
             assert len(row) == self.num_cols
@@ -129,12 +127,12 @@ class Board:
             robot: tuple(target_list) for robot, target_list in targets.items()
         }
 
-    def blocked(self: "Board", tile: Tile) -> bool:
+    def blocked(self, tile: Tile) -> bool:
         if not tile.accessible:
             return True
         return any(robot.tile == tile for robot in self.robots)
 
-    def connected(self: "Board", tile: Tile, direction: Direction) -> bool:
+    def connected(self, tile: Tile, direction: Direction) -> bool:
         if not tile.accessible or direction not in tile.connected:
             return False
         dest_row = tile.row + direction.offset[1]

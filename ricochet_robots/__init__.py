@@ -1,11 +1,15 @@
-# -*- coding: utf-8 -*-
+"""Ricochet Robots solver and game types."""
 
-"""Initialisations."""
+from importlib.metadata import PackageNotFoundError, version
 
-from .__version__ import VERSION, __version__
-from .board import Board, DIRECTIONS, OFFSETS_DIR
+from .board import DIRECTIONS, OFFSETS_DIR, Board
 from .point import Point
 from .solver import Solver
+
+try:
+    __version__ = version("ricochet-robots")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 __all__ = [
     "Board",
@@ -13,6 +17,5 @@ __all__ = [
     "OFFSETS_DIR",
     "Point",
     "Solver",
-    "VERSION",
     "__version__",
 ]

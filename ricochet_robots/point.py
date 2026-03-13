@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Point (cell coordinates) for the solver board."""
 
 
@@ -25,6 +23,6 @@ class Point:
     def __repr__(self) -> str:
         return f"Point({self.x}, {self.y})"
 
-    def move(self, dx: int, dy: int) -> "Point":
+    def move(self, dx: int, dy: int) -> Point:
         """Return the point one step by (dx, dy)."""
         return Point(self.x + dx, self.y + dy)

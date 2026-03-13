@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """Solver for Ricochet Robots (ported from Java)."""
 
+import time
 from collections import deque
-from typing import Dict, List, Optional, Tuple
 
 from .board import DIRECTIONS, OFFSETS_DIR, OPPOSITE, PERP, Board
 from .point import Point
 
 # Type alias: configuration is a tuple of positions (one per robot)
-Configuration = Tuple[Point, ...]
+Configuration = tuple[Point, ...]
 
 
 class _Node:
@@ -21,7 +19,7 @@ class _Node:
         self,
         configuration: Configuration,
         moves: int,
-        previous: Optional["_Node"],
+        previous: _Node | None,
     ) -> None:
         self.configuration = configuration
         self.moves = moves
@@ -37,7 +35,7 @@ class _MoveNode:
         self,
         point: Point,
         moves: int,
-        next_node: Optional["_MoveNode"],
+        next_node: _MoveNode | None,
     ) -> None:
         self.point = point
         self.moves = moves
@@ -55,7 +53,7 @@ class Solver:
     def __init__(
         self,
         board: Board,
-        robots_positions: Tuple[Point, ...],
+        robots_positions: tuple[Point, ...],
         target: Point,
         target_robot_index: int,
         max_moves: int = DEFAULT_MAX_MOVES,
@@ -66,32 +64,32 @@ class Solver:
         self.target = target
         self.target_robot_index = target_robot_index
         self.number_robots = len(robots_positions)
-        self._solution: Optional[List[Configuration]] = None
-        self._moves: int = -1
+        self._solution: list[Configuration] | None = None
+        self._moves = -1
         self._solution = self._solve_brute_force(robots_positions, max_moves, max_time)
-        n = len(self._solution) - 1 if self._solution else -1
-        self._moves = n
+        self._moves = (
+            len(self._solution) - 1 if self._solution else -1
+        )
 
     def moves(self) -> int:
         """Number of moves in the solution, or -1 if no solution found."""
         return self._moves
 
-    def solution(self) -> Optional[List[Configuration]]:
+    def solution(self) -> list[Configuration] | None:
         """List of configurations from initial to final (each step after a move)."""
         return self._solution
 
     def _solve_brute_force(
         self,
-        initial: Tuple[Point, ...],
+        initial: tuple[Point, ...],
         max_moves: int,
         max_time: float,
-    ) -> Optional[List[Configuration]]:
-        import time
+    ) -> list[Configuration] | None:
         start = time.perf_counter()
         end_time = start + max_time
-        queue: deque = deque()
+        queue: deque[_Node] = deque()
         queue.append(_Node(initial, 0, None))
-        current: Optional[_Node] = None
+        current: _Node | None = None
         solved = False
 
         while queue:
@@ -157,7 +155,7 @@ class Solver:
             return None
         assert current.configuration[self.target_robot_index] == self.target
 
-        result: List[Configuration] = []
+        result: list[Configuration] = []
         while current is not None:
             result.append(current.configuration)
             current = current.previous
@@ -165,14 +163,14 @@ class Solver:
         return result
 
     def _end_moves(
-        self, configuration: Tuple[Point, ...]
-    ) -> Dict[Point, _MoveNode]:
+        self, configuration: tuple[Point, ...]
+    ) -> dict[Point, _MoveNode]:
         """Positions from which target robot can reach target (others fixed)."""
         for p in configuration:
             if p == self.target:
                 return {}
         node = _MoveNode(self.target, 0, None)
-        end_moves: Dict[Point, _MoveNode] = {self.target: node}
+        end_moves: dict[Point, _MoveNode] = {self.target: node}
         for dir in DIRECTIONS:
             if self.board.is_connected_with_blocked(
                 self.target, dir, configuration
@@ -186,8 +184,8 @@ class Solver:
 
     def _add_to_map(
         self,
-        map: Dict[Point, _MoveNode],
-        configuration: Tuple[Point, ...],
+        map: dict[Point, _MoveNode],
+        configuration: tuple[Point, ...],
         point: Point,
         moves: int,
         direction: int,
@@ -213,7 +211,7 @@ class Solver:
                 point, perp, configuration
             ) and self.board.is_connected_with_blocked(
                 point, OPPOSITE[perp], configuration
-            ):  # noqa: E501
+            ):
                 opp = OPPOSITE[perp]
                 dx, dy = OFFSETS_DIR[opp]
                 self._add_to_map(

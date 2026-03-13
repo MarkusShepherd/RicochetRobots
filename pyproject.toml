@@ -1,0 +1,19 @@
+[project]
+name = "ricochet-robots"
+version = "0.0.0"
+description = "Ricochet Robots board game solver"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pygame>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.0",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

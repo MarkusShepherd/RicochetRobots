@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
 """Board representation for the Ricochet Robots solver (ported from Java)."""
-
-from typing import List, Optional, Set, Tuple
 
 from .point import Point
 
@@ -33,8 +29,8 @@ class Board:
         self,
         width: int,
         height: int,
-        board: Optional[List[List[int]]] = None,
-        targets: Optional[Set[Point]] = None,
+        board: list[list[int]] | None = None,
+        targets: set[Point] | None = None,
     ) -> None:
         self.width = width
         self.height = height
@@ -45,7 +41,7 @@ class Board:
         self.targets = set(targets) if targets is not None else set()
 
     @classmethod
-    def from_stream(cls, stream) -> "Board":
+    def from_stream(cls, stream) -> Board:
         """Load board from a text stream (same format as Java)."""
         line = stream.readline().strip()
         parts = line.split(None, 1)
@@ -64,7 +60,7 @@ class Board:
                     input_grid[x][y] = " "
 
         board = [[0] * height for _ in range(width)]
-        targets: Set[Point] = set()
+        targets: set[Point] = set()
         for x in range(width):
             for y in range(height):
                 tile = 0
@@ -86,7 +82,7 @@ class Board:
         return (self._board[p.x][p.y] & BITS_DIR[dir]) == BITS_DIR[dir]
 
     def is_connected_with_blocked(
-        self, p: Point, dir: int, blocked: Tuple[Point, ...]
+        self, p: Point, dir: int, blocked: tuple[Point, ...]
     ) -> bool:
         """True if we can step from p in dir (no wall, first step not blocked)."""
         if not self.is_connected(p, dir):
@@ -115,7 +111,7 @@ class Board:
                 return Point(rx, ry)
 
     def dest_with_blocked(
-        self, p: Point, dir: int, blocked: Tuple[Point, ...]
+        self, p: Point, dir: int, blocked: tuple[Point, ...]
     ) -> Point:
         """Slide from p in dir until wall or blocked point; return last cell."""
         if not self.is_connected(p, dir):
@@ -133,18 +129,18 @@ class Board:
             if (self._board[rx][ry] & BITS_DIR[dir]) != BITS_DIR[dir]:
                 return Point(rx, ry)
 
-    def reachable(self, p: Point) -> Set[Point]:
+    def reachable(self, p: Point) -> set[Point]:
         """Set of positions reachable from p in one move (no other robots)."""
-        result: Set[Point] = set()
+        result: set[Point] = set()
         for d in DIRECTIONS:
             result.add(self.dest(p, d))
         return result
 
     def reachable_with_blocked(
-        self, p: Point, blocked: Tuple[Point, ...]
-    ) -> Set[Point]:
+        self, p: Point, blocked: tuple[Point, ...]
+    ) -> set[Point]:
         """Set of positions reachable from p in one move with other robots at blocked."""
-        result: Set[Point] = set()
+        result: set[Point] = set()
         for d in DIRECTIONS:
             result.add(self.dest_with_blocked(p, d, blocked))
         return result
