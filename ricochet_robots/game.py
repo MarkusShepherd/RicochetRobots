@@ -33,7 +33,7 @@ class Robot:
         self: "Robot",
         name: str,
         color: Optional["pygame.Color"] = None,
-        tile: Optional[Tile] = None,
+        tile: Optional["Tile"] = None,
     ) -> None:
         self.name = name
         self.color = color
@@ -137,7 +137,8 @@ class Board:
     def connected(self: "Board", tile: Tile, direction: Direction) -> bool:
         if not tile.accessible or direction not in tile.connected:
             return False
-        dest_row, dest_col = (tile.row, tile.col) + direction.offset
+        dest_row = tile.row + direction.offset[1]
+        dest_col = tile.col + direction.offset[0]
         if not 0 <= dest_row < self.num_rows or not 0 <= dest_col < self.num_cols:
             return False
         dest_tile = self.tiles[dest_row][dest_col]
