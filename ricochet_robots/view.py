@@ -7,10 +7,10 @@ from .point import Point
 
 # Robot colors (match Java: Red, Yellow, Green, Blue)
 ROBOT_COLORS = (
-    (255, 0, 0),    # Red
+    (255, 0, 0),  # Red
     (255, 255, 0),  # Yellow
-    (0, 255, 0),    # Green
-    (0, 0, 255),    # Blue
+    (0, 255, 0),  # Green
+    (0, 0, 255),  # Blue
 )
 
 WALL_THICKNESS = 3
@@ -45,19 +45,17 @@ class BoardView:
         robots: tuple[Point, ...] | None = None,
         targets: set[Point] | None = None,
     ) -> None:
-        """Draw board, targets, and optionally robots onto surface."""
+        """Draw board, targets, and optionally robots."""
         surface.fill((128, 128, 128))
         cw, ch = self.cell_width, self.cell_height
         # Grid lines
         for x in range(1, self.board.width):
             pygame.draw.line(
-                surface, (0, 0, 0),
-                (x * cw, 0), (x * cw, self.total_height), 1
+                surface, (0, 0, 0), (x * cw, 0), (x * cw, self.total_height), 1
             )
         for y in range(1, self.board.height):
             pygame.draw.line(
-                surface, (0, 0, 0),
-                (0, y * ch), (self.total_width, y * ch), 1
+                surface, (0, 0, 0), (0, y * ch), (self.total_width, y * ch), 1
             )
         # Walls (thick black)
         for x in range(self.board.width):
@@ -65,15 +63,25 @@ class BoardView:
                 p = Point(x, y)
                 if x < self.board.width - 1 and not self.board.is_connected(p, RIGHT):
                     pygame.draw.rect(
-                        surface, (0, 0, 0),
-                        ((x + 1) * cw - WALL_THICKNESS // 2, y * ch,
-                         WALL_THICKNESS, ch)
+                        surface,
+                        (0, 0, 0),
+                        (
+                            (x + 1) * cw - WALL_THICKNESS // 2,
+                            y * ch,
+                            WALL_THICKNESS,
+                            ch,
+                        ),
                     )
                 if y < self.board.height - 1 and not self.board.is_connected(p, DOWN):
                     pygame.draw.rect(
-                        surface, (0, 0, 0),
-                        (x * cw, (y + 1) * ch - WALL_THICKNESS // 2,
-                         cw, WALL_THICKNESS)
+                        surface,
+                        (0, 0, 0),
+                        (
+                            x * cw,
+                            (y + 1) * ch - WALL_THICKNESS // 2,
+                            cw,
+                            WALL_THICKNESS,
+                        ),
                     )
         # Targets (white squares, inset)
         t_set = targets if targets is not None else self.board.targets
@@ -81,8 +89,9 @@ class BoardView:
             r = self._cell_rect(p)
             inset = 4
             pygame.draw.rect(
-                surface, (255, 255, 255),
-                (r.x + inset, r.y + inset, r.w - 2 * inset, r.h - 2 * inset)
+                surface,
+                (255, 255, 255),
+                (r.x + inset, r.y + inset, r.w - 2 * inset, r.h - 2 * inset),
             )
         # Robots (colored circles, inset)
         if robots is not None:
@@ -94,7 +103,12 @@ class BoardView:
                 radius = min(r.w, r.h) // 2 - inset
                 pygame.draw.circle(surface, color, center, radius)
 
-    def _wait_ms(self, screen: pygame.Surface, delay_ms: int, clock: pygame.time.Clock) -> bool:
+    def _wait_ms(
+        self,
+        screen: pygame.Surface,
+        delay_ms: int,
+        clock: pygame.time.Clock,
+    ) -> bool:
         """Wait delay_ms, processing events. Return False if QUIT received."""
         wait_remaining = delay_ms
         while wait_remaining > 0:
@@ -110,8 +124,9 @@ class BoardView:
         target: Point,
         delay_ms: int = 1000,
         title: str = "Ricochet Robots",
+        loop: bool = False,
     ) -> None:
-        """Open a window and animate through the solution. Blocks until window closed."""
+        """Open window, animate solution. Blocks until window closed."""
         pygame.init()
         try:
             screen = pygame.display.set_mode(
@@ -121,25 +136,32 @@ class BoardView:
             pygame.display.set_caption(title)
             targets = {target}
             clock = pygame.time.Clock()
-            # Board without robots
-            self.draw(screen, robots=None, targets=targets)
-            pygame.display.flip()
-            if delay_ms > 0 and not self._wait_ms(screen, delay_ms, clock):
-                return
-            # Animate each step
-            for config in solution:
-                for ev in pygame.event.get():
-                    if ev.type == pygame.QUIT:
-                        return
-                self.draw(screen, robots=config, targets=targets)
+
+            def run_one_cycle() -> bool:
+                """Show one full solution. Return False if QUIT received."""
+                self.draw(screen, robots=None, targets=targets)
                 pygame.display.flip()
                 if delay_ms > 0 and not self._wait_ms(screen, delay_ms, clock):
-                    return
-            # Keep window open until quit
-            while True:
-                for ev in pygame.event.get():
-                    if ev.type == pygame.QUIT:
-                        return
-                clock.tick(60)
+                    return False
+                for config in solution:
+                    for ev in pygame.event.get():
+                        if ev.type == pygame.QUIT:
+                            return False
+                    self.draw(screen, robots=config, targets=targets)
+                    pygame.display.flip()
+                    if delay_ms > 0 and not self._wait_ms(screen, delay_ms, clock):
+                        return False
+                return True
+
+            if loop:
+                while run_one_cycle():
+                    pass
+            else:
+                run_one_cycle()
+                while True:
+                    for ev in pygame.event.get():
+                        if ev.type == pygame.QUIT:
+                            return
+                    clock.tick(60)
         finally:
             pygame.quit()

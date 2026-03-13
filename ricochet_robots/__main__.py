@@ -70,6 +70,12 @@ def main() -> None:
         metavar="MS",
         help="Delay in ms between frames in graphical mode (default: 1000)",
     )
+    parser.add_argument(
+        "-l",
+        "--loop",
+        action="store_true",
+        help="In graphical mode, loop the solution animation until window is closed",
+    )
     args = parser.parse_args()
 
     try:
@@ -146,6 +152,7 @@ def main() -> None:
             target,
             delay_ms=args.repaint,
             title=f"Move {target_label} to target with {solver.moves()} moves.",
+            loop=args.loop,
         )
         return
 
