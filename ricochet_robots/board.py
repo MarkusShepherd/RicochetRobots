@@ -18,6 +18,17 @@ BIT_DOWN = 0b00001000
 BITS_DIR = (BIT_RIGHT, BIT_UP, BIT_LEFT, BIT_DOWN)
 OFFSETS_DIR = ((1, 0), (0, -1), (-1, 0), (0, 1))
 
+# Text rendering (match Java Board.toString)
+BARS = (
+    (" ", "\\", "|", "/"),
+    ("\\", " ", "/", "-"),
+    ("|", "/", " ", "\\"),
+    ("/", "-", "\\", " "),
+)
+CONNECTED_CHAR = " "
+EMPTY_FIELD_CHAR = "\u2591"
+TARGET_CHAR = "\u2593"
+
 
 class Board:
     """
@@ -144,3 +155,48 @@ class Board:
         for d in DIRECTIONS:
             result.add(self.dest_with_blocked(p, d, blocked))
         return result
+
+    def format_text(
+        self,
+        robots: dict[Point, str] | None = None,
+        targets: set[Point] | None = None,
+    ) -> str:
+        """Return a text drawing of the board (same style as Java Board.toString)."""
+        robots = robots or {}
+        targets = targets or set()
+        lines: list[str] = []
+        w, h = self.width, self.height
+        # Top border
+        lines.append(
+            BARS[RIGHT][DOWN] + (2 * w - 1) * BARS[UP][DOWN] + BARS[LEFT][DOWN]
+        )
+        for y in range(h):
+            # Row of cells
+            line = BARS[LEFT][RIGHT]
+            for x in range(w):
+                p = Point(x, y)
+                if p in robots:
+                    line += robots[p]
+                elif p in targets:
+                    line += TARGET_CHAR
+                else:
+                    line += EMPTY_FIELD_CHAR
+                line += (
+                    CONNECTED_CHAR if self.is_connected(p, RIGHT) else BARS[LEFT][RIGHT]
+                )
+            lines.append(line)
+            # Horizontal walls between rows
+            if y < h - 1:
+                line = BARS[LEFT][RIGHT]
+                for x in range(w):
+                    p = Point(x, y)
+                    line += (
+                        CONNECTED_CHAR if self.is_connected(p, DOWN) else BARS[UP][DOWN]
+                    )
+                    if x < w - 1:
+                        line += CONNECTED_CHAR
+                line += BARS[LEFT][RIGHT]
+                lines.append(line)
+        # Bottom border
+        lines.append(BARS[RIGHT][UP] + (2 * w - 1) * BARS[UP][DOWN] + BARS[LEFT][UP])
+        return "\n".join(lines)
