@@ -67,9 +67,7 @@ class Solver:
         self._solution: list[Configuration] | None = None
         self._moves = -1
         self._solution = self._solve_brute_force(robots_positions, max_moves, max_time)
-        self._moves = (
-            len(self._solution) - 1 if self._solution else -1
-        )
+        self._moves = len(self._solution) - 1 if self._solution else -1
 
     def moves(self) -> int:
         """Number of moves in the solution, or -1 if no solution found."""
@@ -110,9 +108,7 @@ class Solver:
             blocked = current.configuration
             for dest in self.board.reachable_with_blocked(target_pos, blocked):
                 temp = end_moves_map.get(dest)
-                if temp is not None and (
-                    best_moves < 0 or temp.moves < best_moves
-                ):
+                if temp is not None and (best_moves < 0 or temp.moves < best_moves):
                     move_node = temp
                     best_moves = temp.moves
 
@@ -162,9 +158,7 @@ class Solver:
         result.reverse()
         return result
 
-    def _end_moves(
-        self, configuration: tuple[Point, ...]
-    ) -> dict[Point, _MoveNode]:
+    def _end_moves(self, configuration: tuple[Point, ...]) -> dict[Point, _MoveNode]:
         """Positions from which target robot can reach target (others fixed)."""
         for p in configuration:
             if p == self.target:
@@ -172,14 +166,10 @@ class Solver:
         node = _MoveNode(self.target, 0, None)
         end_moves: dict[Point, _MoveNode] = {self.target: node}
         for dir in DIRECTIONS:
-            if self.board.is_connected_with_blocked(
-                self.target, dir, configuration
-            ):
+            if self.board.is_connected_with_blocked(self.target, dir, configuration):
                 dx, dy = OFFSETS_DIR[dir]
                 one_step = self.target.move(dx, dy)
-                self._add_to_map(
-                    end_moves, configuration, one_step, 1, dir, node
-                )
+                self._add_to_map(end_moves, configuration, one_step, 1, dir, node)
         return end_moves
 
     def _add_to_map(
