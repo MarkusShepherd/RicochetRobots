@@ -1,12 +1,28 @@
 [project]
 name = "ricochet-robots"
 version = "0.0.0"
-description = "Ricochet Robots board game solver"
+description = "An implementation of Alex Randolph's game Ricochet Robots"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.14"
+keywords = ["ricochet robots", "game"]
+authors = [
+    { name = "Markus Shepherd", email = "robots@recommend.games" },
+]
 dependencies = [
     "pygame>=2.0",
 ]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+Homepage = "https://gitlab.com/mshepherd/ricochet-robots"
+Documentation = "https://gitlab.com/mshepherd/ricochet-robots/blob/master/README.md"
+Source = "https://gitlab.com/mshepherd/ricochet-robots"
+Tracker = "https://gitlab.com/mshepherd/ricochet-robots/issues"
 
 [dependency-groups]
 dev = [
