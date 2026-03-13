@@ -28,6 +28,12 @@ With limits:
 uv run python -m ricochet_robots -b boards/3.txt -m 25 -t 60
 ```
 
+**Graphical animation:** use `-g` to open a pygame window and animate the solution (Red, Yellow, Green, Blue robots; white target). Options: `-w` / `--width` (cell width in pixels, default 30), `--height` (cell height), `-r` / `--repaint` (delay between frames in ms, default 1000).
+
+```bash
+uv run python -m ricochet_robots -b boards/3.txt -g
+```
+
 The solver picks random starting positions for four robots and a random target cell, then searches for a solution. Output is the number of moves and each step (position of the target robot).
 
 **Board file format:** first line `width height`, then an ASCII grid of `(2×width−1)` columns × `(2×height−1)` rows: use `|` and `-` for walls between cells, space for no wall, and `X` for a target cell. (The `boards/*.txt` files in this repo may use a different format; the Java solver expected the format above.)

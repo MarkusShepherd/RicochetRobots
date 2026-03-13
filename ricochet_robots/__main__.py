@@ -8,6 +8,7 @@ import time
 from .board import Board
 from .point import Point
 from .solver import Solver
+from .view import BoardView
 
 ROBOT_LABELS = ("Red", "Yellow", "Green", "Blue")
 ROBOT_LETTERS = ("R", "Y", "G", "B")
@@ -39,6 +40,35 @@ def main() -> None:
         default=Solver.DEFAULT_MAX_TIME,
         metavar="SEC",
         help="Max time in seconds (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-g",
+        "--graphical",
+        action="store_true",
+        help="Show graphical animation of the solution",
+    )
+    parser.add_argument(
+        "-w",
+        "--width",
+        type=int,
+        default=30,
+        metavar="PX",
+        help="Cell width in pixels for graphical view (default: 30)",
+    )
+    parser.add_argument(
+        "--height",
+        type=int,
+        default=None,
+        metavar="PX",
+        help="Cell height in pixels for graphical view (default: same as width)",
+    )
+    parser.add_argument(
+        "-r",
+        "--repaint",
+        type=int,
+        default=1000,
+        metavar="MS",
+        help="Delay in ms between frames in graphical mode (default: 1000)",
     )
     args = parser.parse_args()
 
@@ -104,6 +134,20 @@ def main() -> None:
 
     print(f"Found solution in {elapsed:.3f} seconds with {solver.moves()} moves.")
     print()
+
+    if args.graphical:
+        view = BoardView(
+            board,
+            cell_width=args.width,
+            cell_height=args.height,
+        )
+        view.run_animation(
+            solution,
+            target,
+            delay_ms=args.repaint,
+            title=f"Move {target_label} to target with {solver.moves()} moves.",
+        )
+        return
 
     for i, config in enumerate(solution):
         if i == 0:
