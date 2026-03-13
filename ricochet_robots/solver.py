@@ -66,7 +66,7 @@ class Solver:
         self.number_robots = len(robots_positions)
         self._solution: list[Configuration] | None = None
         self._moves = -1
-        self._solution = self._solve_brute_force(robots_positions, max_moves, max_time)
+        self._solution = self._solve_bfs(robots_positions, max_moves, max_time)
         self._moves = len(self._solution) - 1 if self._solution else -1
 
     def moves(self) -> int:
@@ -77,7 +77,7 @@ class Solver:
         """List of configurations from initial to final (each step after a move)."""
         return self._solution
 
-    def _solve_brute_force(
+    def _solve_bfs(
         self,
         initial: tuple[Point, ...],
         max_moves: int,
