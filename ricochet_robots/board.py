@@ -1,6 +1,6 @@
 """Board representation for the Ricochet Robots solver (ported from Java)."""
 
-from .point import Point
+from ricochet_robots.point import Point
 
 # Direction constants (match Java Board)
 RIGHT = 0

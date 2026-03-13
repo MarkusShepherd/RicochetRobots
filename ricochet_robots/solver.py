@@ -3,8 +3,8 @@
 import time
 from collections import deque
 
-from .board import DIRECTIONS, OFFSETS_DIR, OPPOSITE, PERP, Board
-from .point import Point
+from ricochet_robots.board import DIRECTIONS, OFFSETS_DIR, OPPOSITE, PERP, Board
+from ricochet_robots.point import Point
 
 # Type alias: configuration is a tuple of positions (one per robot)
 Configuration = tuple[Point, ...]

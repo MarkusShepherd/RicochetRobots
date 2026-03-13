@@ -2,8 +2,8 @@
 
 import pygame
 
-from .board import Board, DOWN, RIGHT
-from .point import Point
+from ricochet_robots.board import Board, DOWN, RIGHT
+from ricochet_robots.point import Point
 
 # Robot colors (match Java: Red, Yellow, Green, Blue)
 ROBOT_COLORS = (

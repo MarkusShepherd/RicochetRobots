@@ -5,10 +5,10 @@ import random
 import sys
 import time
 
-from .board import Board
-from .point import Point
-from .solver import Solver
-from .view import BoardView
+from ricochet_robots.board import Board
+from ricochet_robots.point import Point
+from ricochet_robots.solver import Solver
+from ricochet_robots.view import BoardView
 
 ROBOT_LABELS = ("Red", "Yellow", "Green", "Blue")
 ROBOT_LETTERS = ("R", "Y", "G", "B")

@@ -2,9 +2,9 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .board import DIRECTIONS, OFFSETS_DIR, Board
-from .point import Point
-from .solver import Solver
+from ricochet_robots.board import DIRECTIONS, OFFSETS_DIR, Board
+from ricochet_robots.point import Point
+from ricochet_robots.solver import Solver
 
 try:
     __version__ = version("ricochet-robots")
