@@ -3,6 +3,14 @@
 A Python implementation of Alex Randolph's game
 [*Ricochet Robots*](https://recommend.games/#/game/51) including a solver.
 
+## How the solver works
+
+We want to get one chosen robot onto the target square. On each move you pick a robot and a direction; it slides in that direction until it hits a wall or another robot and stops. So the state of the puzzle is simply where all the robots are.
+
+The solver explores states one move at a time. From the current state it considers every robot and every direction that robot can slide; each choice leads to a new state (new positions). It works through these states in order of “how many moves it took to get here”, so the first time it reaches a state where the target robot is on the target, it has found a shortest solution. To keep runs bounded, you can cap the number of moves and the time allowed.
+
+When the target robot can slide to a square from which we have already worked out “the target robot can reach the goal from here” (ignoring the others), the solver can plug in that precomputed path and finish without exploring further. That shortcut often makes finding a solution much faster.
+
 ## Setup
 
 - **Python 3.14** (see [pyenv](https://github.com/pyenv/pyenv) or [uv](https://docs.astral.sh/uv/)).
